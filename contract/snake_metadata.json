@@ -1,0 +1,22 @@
+{
+  "name": "$SNAKE",
+  "description": "Official token of SnakeChain — Play to Earn game on TON Blockchain. Earn $SNAKE by playing, refer friends, and compete on leaderboards.",
+  "symbol": "SNAKE",
+  "decimals": 9,
+  "image": "https://snakeminiapp.vercel.app/snake_logo.png",
+  "social_links": [
+    "https://t.me/SnakeChainOfficial",
+    "https://snakeminiapp.vercel.app"
+  ],
+  "tokenomics": {
+    "total_supply": "100000000",
+    "distribution": {
+      "play_to_earn": "40%",
+      "airdrop_community": "20%",
+      "liquidity_pool": "15%",
+      "team_dev": "15%",
+      "marketing": "10%"
+    }
+  },
+  "tags": ["gamefi", "play-to-earn", "telegram", "ton"]
+}

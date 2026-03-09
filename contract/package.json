@@ -1,0 +1,20 @@
+{
+  "name": "snake-token-contract",
+  "version": "1.0.0",
+  "description": "$SNAKE Token — SnakeChain Play to Earn on TON",
+  "scripts": {
+    "build":   "blueprint build",
+    "test":    "blueprint test",
+    "deploy":  "blueprint run deploySnake"
+  },
+  "dependencies": {
+    "@ton/blueprint": "^0.20.0",
+    "@ton/core":      "^0.56.0",
+    "@ton/crypto":    "^3.2.0",
+    "@tact-lang/compiler": "^1.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^18.0.0"
+  }
+}
