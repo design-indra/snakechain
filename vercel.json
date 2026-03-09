@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/player/register", "dest": "/api/player/register.js" },
+    { "src": "/api/session/start", "dest": "/api/session/start.js" },
+    { "src": "/api/session/submit", "dest": "/api/session/submit.js" },
+    { "src": "/api/leaderboard", "dest": "/api/leaderboard/index.js" },
+    { "src": "/api/energy", "dest": "/api/energy/index.js" },
+    { "src": "/api/reward/claim", "dest": "/api/reward/claim.js" },
+    { "src": "/api/referral", "dest": "/api/referral/index.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
