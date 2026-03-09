@@ -3,1219 +3,600 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-<title>🐍 SnakeChain — Play to Earn on TON</title>
+<title>🐍 SnakeChain</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Teko:wght@400;600&display=swap');
-
-:root {
-  --bg: #050810;
-  --surface: #0c1020;
-  --card: #101828;
-  --border: #1a2540;
-  --cyan: #00e5ff;
-  --cyan-dim: #0099bb;
-  --gold: #ffc107;
-  --green: #00e676;
-  --red: #ff1744;
-  --purple: #d500f9;
-  --orange: #ff6d00;
-  --text: #cdd6f4;
-  --text-dim: #45506a;
-  --glow-cyan: 0 0 20px rgba(0,229,255,0.4);
-  --glow-gold: 0 0 20px rgba(255,193,7,0.5);
-  --glow-purple: 0 0 20px rgba(213,0,249,0.4);
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap');
+:root{
+  --bg:#050810;--surface:#0c1020;--card:#101828;--border:#1a2540;
+  --cyan:#00e5ff;--gold:#ffc107;--green:#00e676;--red:#ff1744;--purple:#d500f9;
+  --text:#cdd6f4;--dim:#45506a;
+  --gc:0 0 20px rgba(0,229,255,0.4);--gg:0 0 20px rgba(255,193,7,0.5);
 }
-
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html,body{height:100%;overflow:hidden}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Rajdhani', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Animated BG */
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-glow {
-  position: fixed;
-  width: 400px; height: 400px;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.15;
-}
-.bg-glow.g1 { background: var(--cyan); top: -100px; left: -100px; }
-.bg-glow.g2 { background: var(--purple); bottom: -100px; right: -100px; }
-
-/* Main App */
-.app {
-  width: 100%;
-  max-width: 420px;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-}
-
-/* === SCREENS === */
-.screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
-.screen.active { display: flex; }
-
-/* ===== WALLET SCREEN ===== */
-.wallet-screen {
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  padding: 32px 24px;
-}
-
-.logo-wrap {
-  text-align: center;
-  animation: floatLogo 3s ease-in-out infinite;
-}
-@keyframes floatLogo {
-  0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)}
-}
-
-.logo-icon { font-size: 64px; display: block; margin-bottom: 12px; }
-
-.logo-title {
-  font-family: 'Teko', sans-serif;
-  font-size: 42px;
-  letter-spacing: 4px;
-  color: var(--cyan);
-  text-shadow: var(--glow-cyan);
-  line-height: 1;
-}
-
-.logo-sub {
-  font-size: 13px;
-  color: var(--text-dim);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-}
-
-.feature-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative;
-  overflow: hidden;
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-}
-.feature-card.c1::before { background: var(--cyan); }
-.feature-card.c2::before { background: var(--gold); }
-.feature-card.c3::before { background: var(--purple); }
-.feature-card.c4::before { background: var(--green); }
-
-.feature-emoji { font-size: 24px; }
-.feature-name { font-weight: 700; font-size: 14px; color: var(--text); }
-.feature-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
-
-.token-info {
-  width: 100%;
-  background: linear-gradient(135deg, #0a1520, #0a0d1a);
-  border: 1px solid var(--cyan);
-  border-radius: 14px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: var(--glow-cyan);
-}
-
-.token-symbol {
-  font-family: 'Teko', sans-serif;
-  font-size: 32px;
-  color: var(--cyan);
-  text-shadow: var(--glow-cyan);
-}
-.token-desc { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-
-.btn-connect {
-  width: 100%;
-  padding: 18px;
-  background: linear-gradient(135deg, var(--cyan), #0077aa);
-  border: none;
-  border-radius: 14px;
-  font-family: 'Teko', sans-serif;
-  font-size: 22px;
-  letter-spacing: 2px;
-  color: #000;
-  cursor: pointer;
-  box-shadow: var(--glow-cyan);
-  transition: all 0.2s;
-  font-weight: 600;
-}
-.btn-connect:active { transform: scale(0.97); }
-
-.skip-btn {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 13px;
-  cursor: pointer;
-  text-decoration: underline;
-  letter-spacing: 1px;
-}
-
-/* ===== GAME SCREEN ===== */
-.game-screen {
-  padding: 10px 12px;
-  gap: 8px;
-  align-items: center;
-}
-
-/* Top bar */
-.top-bar {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.wallet-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 10px 4px 6px;
-  flex: 1;
-}
-
-.wallet-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-.wallet-addr { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); }
-
-.ton-balance {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: var(--cyan);
-  font-weight: 700;
-}
-
-/* Stats Row */
-.stats-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-.stat-box {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 7px 6px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-box::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-}
-.stat-box.s1::after { background: var(--cyan); }
-.stat-box.s2::after { background: var(--gold); }
-.stat-box.s3::after { background: var(--purple); }
-.stat-box.s4::after { background: var(--green); }
-
-.stat-label { font-size: 8px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
-.stat-value { font-family: 'Share Tech Mono', monospace; font-size: 15px; margin-top: 2px; }
-.stat-box.s1 .stat-value { color: var(--cyan); }
-.stat-box.s2 .stat-value { color: var(--gold); }
-.stat-box.s3 .stat-value { color: var(--purple); }
-.stat-box.s4 .stat-value { color: var(--green); }
-
-/* Earn bar */
-.earn-bar {
-  width: 100%;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.earn-label { font-size: 10px; color: var(--text-dim); white-space: nowrap; letter-spacing: 1px; }
-
-.earn-track {
-  flex: 1;
-  background: var(--border);
-  height: 6px;
-  border-radius: 3px;
-  overflow: hidden;
-  position: relative;
-}
-
-.earn-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.5s ease;
-  width: 0%;
-  background: linear-gradient(90deg, var(--cyan), var(--purple));
-  box-shadow: 0 0 8px var(--cyan);
-}
-
-.earn-amount {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  color: var(--cyan);
-  white-space: nowrap;
-}
-
-/* Canvas */
-.canvas-wrap {
-  position: relative;
-  border: 1.5px solid var(--cyan);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--glow-cyan), inset 0 0 30px rgba(0,229,255,0.03);
-  flex-shrink: 0;
-}
-
-canvas { display: block; }
-
-/* Overlays */
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(5,8,16,0.93);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  border-radius: 10px;
-  backdrop-filter: blur(6px);
-}
-.overlay.hidden { display: none; }
-
-.ov-title {
-  font-family: 'Teko', sans-serif;
-  font-size: 28px;
-  letter-spacing: 3px;
-  color: var(--cyan);
-  text-shadow: var(--glow-cyan);
-  text-align: center;
-  line-height: 1.2;
-}
-.ov-title.dead { color: var(--red); text-shadow: 0 0 20px rgba(255,23,68,0.6); }
-
-.ov-earn {
-  background: linear-gradient(135deg, #0a1020, #0a0d1a);
-  border: 1px solid var(--cyan);
-  border-radius: 10px;
-  padding: 10px 20px;
-  text-align: center;
-  box-shadow: var(--glow-cyan);
-}
-.ov-earn-label { font-size: 9px; color: var(--text-dim); letter-spacing: 2px; }
-.ov-earn-value { font-family: 'Share Tech Mono', monospace; font-size: 24px; color: var(--cyan); }
-
-.nft-won {
-  background: linear-gradient(135deg, #150a20, #0d0a18);
-  border: 1px solid var(--purple);
-  border-radius: 10px;
-  padding: 12px 18px;
-  text-align: center;
-  box-shadow: var(--glow-purple);
-  animation: nftPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes nftPop {
-  0%{transform:scale(0.3) rotate(-10deg);opacity:0}
-  100%{transform:scale(1) rotate(0deg);opacity:1}
-}
-.nft-emoji { font-size: 36px; margin-bottom: 4px; }
-.nft-name { font-size: 12px; color: var(--purple); font-weight: 700; letter-spacing: 1px; }
-.nft-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-
-.btn-play {
-  padding: 12px 28px;
-  background: linear-gradient(135deg, var(--cyan), #0077aa);
-  border: none;
-  border-radius: 10px;
-  font-family: 'Teko', sans-serif;
-  font-size: 18px;
-  letter-spacing: 2px;
-  color: #000;
-  cursor: pointer;
-  box-shadow: var(--glow-cyan);
-  transition: all 0.15s;
-}
-.btn-play:active { transform: scale(0.95); }
-
-.btn-sm {
-  padding: 7px 16px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 12px;
-  color: var(--text-dim);
-  cursor: pointer;
-  letter-spacing: 1px;
-}
-
-/* D-Pad */
-.dpad {
-  display: grid;
-  grid-template-areas: ". u ." "l c r" ". d .";
-  grid-template-columns: 52px 52px 52px;
-  gap: 5px;
-}
-
-.dp {
-  width: 52px; height: 52px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.1s;
-  user-select: none;
-}
-.dp:active { background: var(--cyan); color: #000; transform: scale(0.9); box-shadow: var(--glow-cyan); }
-.dp.u{grid-area:u} .dp.d{grid-area:d} .dp.l{grid-area:l} .dp.r{grid-area:r}
-.dp.c{grid-area:c; background:transparent; border:none; cursor:default}
-
-/* ===== LEADERBOARD SCREEN ===== */
-.lb-screen {
-  padding: 16px;
-  gap: 12px;
-}
-
-.screen-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.screen-title {
-  font-family: 'Teko', sans-serif;
-  font-size: 28px;
-  letter-spacing: 3px;
-  color: var(--cyan);
-  text-shadow: var(--glow-cyan);
-}
-
-.btn-back {
-  padding: 6px 14px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 13px;
-  color: var(--text-dim);
-  cursor: pointer;
-}
-
-.lb-my-rank {
-  width: 100%;
-  background: linear-gradient(135deg, #0a1520, #0d1020);
-  border: 1px solid var(--cyan);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: var(--glow-cyan);
-}
-
-.lb-rank-num {
-  font-family: 'Teko', sans-serif;
-  font-size: 36px;
-  color: var(--cyan);
-  width: 50px;
-  text-align: center;
-  line-height: 1;
-}
-.lb-my-info { flex: 1; }
-.lb-my-name { font-size: 15px; font-weight: 700; color: var(--text); }
-.lb-my-score { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-.lb-my-earn {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 16px;
-  color: var(--cyan);
-}
-
-.lb-list {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.lb-item {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: border-color 0.2s;
-}
-.lb-item.top1 { border-color: #ffd700; }
-.lb-item.top2 { border-color: #c0c0c0; }
-.lb-item.top3 { border-color: #cd7f32; }
-
-.lb-pos {
-  font-family: 'Teko', sans-serif;
-  font-size: 20px;
-  width: 30px;
-  text-align: center;
-}
-.lb-pos.gold { color: #ffd700; }
-.lb-pos.silver { color: #c0c0c0; }
-.lb-pos.bronze { color: #cd7f32; }
-
-.lb-avatar { font-size: 24px; }
-
-.lb-info { flex: 1; }
-.lb-name { font-size: 14px; font-weight: 700; }
-.lb-wallet { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); }
-
-.lb-tokens {
-  text-align: right;
-  font-family: 'Share Tech Mono', monospace;
-}
-.lb-token-amount { font-size: 15px; color: var(--cyan); }
-.lb-token-label { font-size: 9px; color: var(--text-dim); }
-
-/* ===== NFT SCREEN ===== */
-.nft-screen {
-  padding: 16px;
-  gap: 12px;
-}
-
-.nft-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-}
-
-.nft-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-.nft-card.unlocked { border-color: var(--purple); box-shadow: var(--glow-purple); }
-.nft-card.locked { opacity: 0.6; }
-
-.nft-card-emoji { font-size: 40px; }
-.nft-card-name { font-size: 12px; font-weight: 700; text-align: center; }
-.nft-card-req { font-size: 10px; color: var(--text-dim); text-align: center; }
-
-.nft-badge {
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  letter-spacing: 1px;
-}
-.badge-unlocked { background: var(--purple); color: #fff; }
-.badge-locked { background: var(--border); color: var(--text-dim); }
-
-.nft-rarity {
-  position: absolute;
-  top: 8px; right: 8px;
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 700;
-}
-.r-common { background: #1a3a1a; color: var(--green); }
-.r-rare { background: #1a1a3a; color: #4488ff; }
-.r-epic { background: #2a1a3a; color: var(--purple); }
-.r-legendary { background: #2a2000; color: var(--gold); }
-
-/* Mint button */
-.btn-mint {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--purple), #6600aa);
-  border: none;
-  border-radius: 10px;
-  font-family: 'Teko', sans-serif;
-  font-size: 18px;
-  letter-spacing: 2px;
-  color: #fff;
-  cursor: pointer;
-  box-shadow: var(--glow-purple);
-  transition: all 0.2s;
-}
-.btn-mint:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-.btn-mint:not(:disabled):active { transform: scale(0.97); }
-
-/* Nav Tabs */
-.nav-tabs {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  max-width: 420px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex;
-  z-index: 100;
-}
-
-.nav-tab {
-  flex: 1;
-  padding: 10px 4px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  cursor: pointer;
-  transition: color 0.2s;
-  border: none;
-  background: none;
-  color: var(--text-dim);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-.nav-tab.active { color: var(--cyan); }
-.nav-tab-icon { font-size: 20px; }
-
-/* Toast */
-.toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-80px);
-  background: var(--card);
-  border: 1px solid var(--cyan);
-  border-radius: 10px;
-  padding: 10px 20px;
-  font-size: 13px;
-  color: var(--cyan);
-  font-weight: 700;
-  z-index: 999;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  white-space: nowrap;
-  box-shadow: var(--glow-cyan);
-  pointer-events: none;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-/* Claim btn */
-.btn-claim {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--gold), #aa7700);
-  border: none;
-  border-radius: 10px;
-  font-family: 'Teko', sans-serif;
-  font-size: 20px;
-  letter-spacing: 2px;
-  color: #000;
-  cursor: pointer;
-  box-shadow: var(--glow-gold);
-  transition: all 0.2s;
-  font-weight: 700;
-}
-.btn-claim:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-.btn-claim:not(:disabled):active { transform: scale(0.97); }
-
-.pending-earn {
-  background: linear-gradient(135deg, #0a1520, #0d1020);
-  border: 1px solid var(--gold);
-  border-radius: 12px;
-  padding: 14px;
-  width: 100%;
-  text-align: center;
-  box-shadow: var(--glow-gold);
-}
-.pending-label { font-size: 10px; color: var(--text-dim); letter-spacing: 2px; }
-.pending-amount { font-family: 'Share Tech Mono', monospace; font-size: 32px; color: var(--gold); }
-.pending-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* Token float anim */
-@keyframes floatToken {
-  0%{transform:translateY(0);opacity:1}
-  100%{transform:translateY(-60px);opacity:0}
-}
-.token-float {
-  position: absolute;
-  font-family:'Share Tech Mono',monospace;
-  font-size:13px;
-  color:var(--cyan);
-  pointer-events:none;
-  animation: floatToken 1s ease forwards;
-  z-index:99;
-  text-shadow: var(--glow-cyan);
-}
-
-.pb20{padding-bottom:60px}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif}
+.bgrid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03)1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
+.app{width:100%;max-width:420px;height:100vh;display:flex;flex-direction:column;position:relative;z-index:1;margin:0 auto;overflow:hidden}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;height:100%;overflow-y:auto}
+.screen.active{display:flex}
+
+/* LOADING */
+.ls-wrap{align-items:center;justify-content:center;gap:18px;height:100%}
+.ls-icon{font-size:68px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.ls-title{font-family:'Teko',sans-serif;font-size:46px;letter-spacing:4px;color:var(--cyan);text-shadow:var(--gc)}
+.ls-sub{font-size:11px;color:var(--dim);letter-spacing:3px}
+.ls-bar-bg{width:200px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.ls-bar{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:2px;animation:lbar 2.2s ease forwards}
+@keyframes lbar{0%{width:0}100%{width:100%}}
+.ls-status{font-size:10px;color:var(--dim);letter-spacing:1px;min-height:14px}
+
+/* WALLET SCREEN */
+.ws-wrap{align-items:center;justify-content:center;gap:16px;padding:24px 18px;height:100%}
+.ws-icon{font-size:52px}
+.ws-title{font-family:'Teko',sans-serif;font-size:42px;letter-spacing:4px;color:var(--cyan);text-shadow:var(--gc);line-height:1}
+.ws-sub{font-size:11px;color:var(--dim);letter-spacing:3px}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.fc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;position:relative;overflow:hidden}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.fc.c1::before{background:var(--cyan)}.fc.c2::before{background:var(--gold)}
+.fc.c3::before{background:var(--purple)}.fc.c4::before{background:var(--green)}
+.fc-icon{font-size:20px;margin-bottom:3px}
+.fc-name{font-size:12px;font-weight:700}
+.fc-desc{font-size:9px;color:var(--dim);line-height:1.4;margin-top:1px}
+.tok-card{width:100%;background:linear-gradient(135deg,#0a1520,#0a0d1a);border:1px solid var(--cyan);border-radius:12px;padding:12px;text-align:center;box-shadow:var(--gc)}
+.tok-sym{font-family:'Teko',sans-serif;font-size:28px;color:var(--cyan);text-shadow:var(--gc)}
+.tok-desc{font-size:10px;color:var(--dim);margin-top:2px}
+.tok-stats{display:flex;justify-content:center;gap:20px;margin-top:8px}
+.ts-v{font-size:15px;color:var(--cyan);font-weight:700;text-align:center}
+.ts-l{font-size:8px;color:var(--dim);text-align:center}
+.btn-main{width:100%;padding:15px;background:linear-gradient(135deg,var(--cyan),#0077aa);border:none;border-radius:12px;font-family:'Teko',sans-serif;font-size:20px;letter-spacing:2px;color:#000;cursor:pointer;box-shadow:var(--gc);transition:all 0.15s;font-weight:700}
+.btn-main:active{transform:scale(0.97)}
+
+/* GAME SCREEN */
+.gs-wrap{padding:8px 10px;gap:7px;align-items:center;height:100%}
+.topbar{width:100%;display:flex;align-items:center;gap:6px}
+.w-pill{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 6px;flex:1;min-width:0}
+.wdot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.waddr{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tonbal{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--cyan);font-weight:700;white-space:nowrap;flex-shrink:0}
+.stats-row{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.sb{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:5px 3px;text-align:center;position:relative;overflow:hidden}
+.sb::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.sb.s1::after{background:var(--cyan)}.sb.s2::after{background:var(--gold)}
+.sb.s3::after{background:var(--purple)}.sb.s4::after{background:var(--green)}
+.sb-label{font-size:7px;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.sb-val{font-family:'Share Tech Mono',monospace;font-size:14px;margin-top:1px}
+.sb.s1 .sb-val{color:var(--cyan)}.sb.s2 .sb-val{color:var(--gold)}
+.sb.s3 .sb-val{color:var(--purple)}.sb.s4 .sb-val{color:var(--green)}
+.ebar{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:6px}
+.eicons{display:flex;gap:2px}
+.eicon{font-size:12px;transition:opacity 0.3s}
+.eicon.off{opacity:.15}
+.erefill{font-size:8px;color:var(--dim);margin-left:auto;white-space:nowrap}
+.sbar{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:7px}
+.sbar-label{font-size:8px;color:var(--dim);white-space:nowrap;letter-spacing:1px}
+.sbar-track{flex:1;background:var(--border);height:4px;border-radius:2px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:2px;transition:width .5s;width:0%;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 0 6px var(--cyan)}
+.sbar-amt{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan);white-space:nowrap}
+.cwrap{position:relative;border:1.5px solid var(--cyan);border-radius:12px;overflow:hidden;box-shadow:var(--gc),inset 0 0 30px rgba(0,229,255,.03);flex-shrink:0}
+canvas{display:block}
+.ov{position:absolute;inset:0;background:rgba(5,8,16,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-radius:10px;backdrop-filter:blur(5px)}
+.ov.hidden{display:none}
+.ov-title{font-family:'Teko',sans-serif;font-size:24px;letter-spacing:3px;color:var(--cyan);text-shadow:var(--gc);text-align:center;line-height:1.2}
+.ov-title.dead{color:var(--red);text-shadow:0 0 20px rgba(255,23,68,.6)}
+.ov-sub{font-size:10px;color:var(--dim);text-align:center;line-height:1.7}
+.ov-earn{background:linear-gradient(135deg,#0a1020,#0a0d1a);border:1px solid var(--cyan);border-radius:10px;padding:8px 18px;text-align:center;box-shadow:var(--gc)}
+.ov-earn-lbl{font-size:7px;color:var(--dim);letter-spacing:2px}
+.ov-earn-val{font-family:'Share Tech Mono',monospace;font-size:22px;color:var(--cyan)}
+.noe-box{background:linear-gradient(135deg,#1a0a00,#100800);border:1px solid var(--gold);border-radius:10px;padding:12px 16px;text-align:center;box-shadow:var(--gg)}
+.noe-title{font-family:'Teko',sans-serif;font-size:20px;color:var(--gold);letter-spacing:2px}
+.noe-sub{font-size:9px;color:var(--dim);margin-top:3px;line-height:1.6}
+.noe-timer{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--gold);margin-top:5px}
+.btn-play{padding:10px 24px;background:linear-gradient(135deg,var(--cyan),#0077aa);border:none;border-radius:10px;font-family:'Teko',sans-serif;font-size:18px;letter-spacing:2px;color:#000;cursor:pointer;box-shadow:var(--gc);transition:all .15s}
+.btn-play:active{transform:scale(.95)}
+.btn-sm{padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--dim);cursor:pointer}
+.dpad{display:grid;grid-template-areas:". u ." "l . r" ". d .";grid-template-columns:52px 52px 52px;gap:5px}
+.dp{width:52px;height:52px;background:var(--card);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .1s;user-select:none}
+.dp:active{background:var(--cyan);color:#000;transform:scale(.9);box-shadow:var(--gc)}
+.dp.u{grid-area:u}.dp.d{grid-area:d}.dp.l{grid-area:l}.dp.r{grid-area:r}
+
+/* LEADERBOARD */
+.lb-wrap{padding:14px;gap:10px;height:100%}
+.sc-title{font-family:'Teko',sans-serif;font-size:26px;letter-spacing:3px;color:var(--cyan);text-shadow:var(--gc)}
+.my-rank{width:100%;background:linear-gradient(135deg,#0a1520,#0d1020);border:1px solid var(--cyan);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--gc)}
+.mr-num{font-family:'Teko',sans-serif;font-size:30px;color:var(--cyan);width:40px;text-align:center;line-height:1}
+.mr-info{flex:1}
+.mr-name{font-size:13px;font-weight:700}
+.mr-score{font-size:10px;color:var(--dim);margin-top:1px}
+.mr-tok{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cyan)}
+.week-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 14px;display:flex;justify-content:space-between;align-items:center}
+.wc-lbl{font-size:8px;color:var(--dim);letter-spacing:1px}
+.wc-time{font-size:13px;color:var(--text);font-weight:700;margin-top:2px}
+.wc-prize{font-size:10px;color:var(--gold);line-height:1.5}
+.lb-tabs{display:flex;gap:6px;width:100%}
+.lb-tab{flex:1;padding:7px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--dim);cursor:pointer;text-align:center;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px}
+.lb-tab.active{background:var(--cyan);color:#000;border-color:var(--cyan)}
+.lb-list{width:100%;display:flex;flex-direction:column;gap:5px;padding-bottom:60px}
+.lb-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:8px}
+.lb-item.t1{border-color:#ffd700}.lb-item.t2{border-color:#c0c0c0}.lb-item.t3{border-color:#cd7f32}
+.lb-pos{font-family:'Teko',sans-serif;font-size:18px;width:26px;text-align:center}
+.lb-pos.g{color:#ffd700}.lb-pos.s{color:#c0c0c0}.lb-pos.b{color:#cd7f32}
+.lb-info{flex:1}
+.lb-name{font-size:12px;font-weight:700}
+.lb-sub{font-size:8px;color:var(--dim)}
+.lb-score{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cyan)}
+
+/* REFERRAL */
+.ref-wrap{padding:14px;gap:10px;height:100%}
+.ref-card{width:100%;background:var(--card);border:1px solid var(--cyan);border-radius:12px;padding:14px;box-shadow:var(--gc)}
+.ref-lbl{font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:5px}
+.ref-txt{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--cyan);word-break:break-all;line-height:1.6}
+.btn-copy{width:100%;padding:10px;background:var(--cyan);border:none;border-radius:8px;font-family:'Teko',sans-serif;font-size:16px;letter-spacing:2px;color:#000;cursor:pointer;margin-top:8px;transition:all .2s}
+.btn-copy:active{transform:scale(.97)}
+.btn-share{width:100%;padding:9px;background:transparent;border:1px solid var(--green);border-radius:8px;font-family:'Teko',sans-serif;font-size:14px;letter-spacing:2px;color:var(--green);cursor:pointer;margin-top:5px}
+.ref-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.rs{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.rs-val{font-family:'Share Tech Mono',monospace;font-size:22px;color:var(--cyan)}
+.rs-lbl{font-size:8px;color:var(--dim);margin-top:2px;letter-spacing:1px}
+.ref-table{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:60px}
+.rt-hdr{padding:7px 12px;font-size:7px;color:var(--dim);letter-spacing:2px;border-bottom:1px solid var(--border);text-transform:uppercase}
+.rt-row{display:flex;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);font-size:10px}
+.rt-row:last-child{border:none}
+.rt-ms{color:var(--dim);flex:1}
+.rt-rw{color:var(--cyan);font-weight:700}
+
+/* CLAIM */
+.cl-wrap{padding:14px;gap:10px;align-items:center;height:100%}
+.pend-card{width:100%;background:linear-gradient(135deg,#0a1520,#0d1020);border:1px solid var(--gold);border-radius:14px;padding:16px;text-align:center;box-shadow:var(--gg)}
+.pend-lbl{font-size:8px;color:var(--dim);letter-spacing:2px}
+.pend-amt{font-family:'Share Tech Mono',monospace;font-size:36px;color:var(--gold)}
+.pend-usd{font-size:11px;color:var(--dim);margin-top:2px}
+.stats-card{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.sc-t{font-size:11px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:8px}
+.sc-row{display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border)}
+.sc-row:last-child{border:none}
+.sc-row span:first-child{color:var(--dim)}
+.sc-row span:last-child{font-weight:700}
+.claim-info{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--dim);line-height:1.9}
+.btn-claim{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),#aa7700);border:none;border-radius:10px;font-family:'Teko',sans-serif;font-size:20px;letter-spacing:2px;color:#000;cursor:pointer;box-shadow:var(--gg);font-weight:700;margin-bottom:60px;transition:all .2s}
+.btn-claim:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn-claim:not(:disabled):active{transform:scale(.97)}
+
+/* NAV */
+.navtabs{position:fixed;bottom:0;width:100%;max-width:420px;background:var(--surface);border-top:1px solid var(--border);display:none;z-index:100}
+.nav-tab{flex:1;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:none;color:var(--dim);font-family:'Rajdhani',sans-serif;font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.nav-tab.active{color:var(--cyan)}
+.nav-icon{font-size:19px}
+
+/* TOAST */
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--card);border:1px solid var(--cyan);border-radius:10px;padding:8px 18px;font-size:12px;color:var(--cyan);font-weight:700;z-index:999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:var(--gc);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@keyframes floatup{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-55px);opacity:0}}
+.tf{position:fixed;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);pointer-events:none;animation:floatup .9s ease forwards;z-index:99;text-shadow:var(--gc)}
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top:3px solid var(--cyan);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div class="bg-grid"></div>
-<div class="bg-glow g1"></div>
-<div class="bg-glow g2"></div>
-
-<!-- Toast -->
+<div class="bgrid"></div>
 <div class="toast" id="toast"></div>
-
 <div class="app">
 
-<!-- ===== WALLET CONNECT SCREEN ===== -->
-<div class="screen active" id="walletScreen">
-  <div class="wallet-screen">
-    <div class="logo-wrap">
-      <span class="logo-icon">🐍</span>
-      <div class="logo-title">SNAKECHAIN</div>
-      <div class="logo-sub">Play · Earn · Own on TON</div>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card c1">
-        <div class="feature-emoji">🎮</div>
-        <div class="feature-name">Play to Earn</div>
-        <div class="feature-desc">Dapatkan $SNAKE token setiap sesi bermain</div>
-      </div>
-      <div class="feature-card c2">
-        <div class="feature-emoji">🏆</div>
-        <div class="feature-name">Leaderboard</div>
-        <div class="feature-desc">Bersaing & menangkan prize pool mingguan</div>
-      </div>
-      <div class="feature-card c3">
-        <div class="feature-emoji">🖼️</div>
-        <div class="feature-name">NFT Prizes</div>
-        <div class="feature-desc">Mint NFT eksklusif dari pencapaianmu</div>
-      </div>
-      <div class="feature-card c4">
-        <div class="feature-emoji">⛓️</div>
-        <div class="feature-name">TON Native</div>
-        <div class="feature-desc">Transaksi cepat & biaya gas sangat murah</div>
-      </div>
-    </div>
-
-    <div class="token-info">
-      <div class="token-symbol">$SNAKE</div>
-      <div class="token-desc">Token resmi SnakeChain di jaringan TON Blockchain</div>
-      <div style="display:flex;justify-content:center;gap:24px;margin-top:12px">
-        <div style="text-align:center">
-          <div style="font-size:18px;color:var(--cyan);font-weight:700">100M</div>
-          <div style="font-size:10px;color:var(--text-dim)">Total Supply</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:18px;color:var(--green);font-weight:700">60%</div>
-          <div style="font-size:10px;color:var(--text-dim)">Play Rewards</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:18px;color:var(--gold);font-weight:700">2,847</div>
-          <div style="font-size:10px;color:var(--text-dim)">Players</div>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-connect" onclick="connectWallet()">
-      🔗 HUBUNGKAN TONKEEPER
-    </button>
-    <button class="skip-btn" onclick="skipWallet()">Lanjut tanpa wallet (demo)</button>
+<!-- LOADING -->
+<div class="screen active" id="sLoad">
+  <div class="ls-wrap screen">
+    <div class="ls-icon">🐍</div>
+    <div class="ls-title">SNAKECHAIN</div>
+    <div class="ls-sub">PLAY · EARN · OWN ON TON</div>
+    <div class="ls-bar-bg"><div class="ls-bar"></div></div>
+    <div class="ls-status" id="lsStatus">Menghubungkan ke Telegram...</div>
   </div>
 </div>
 
-<!-- ===== GAME SCREEN ===== -->
-<div class="screen" id="gameScreen">
-  <div class="game-screen">
-    <!-- Top bar -->
-    <div class="top-bar">
-      <div class="wallet-pill">
-        <div class="wallet-dot"></div>
-        <div class="wallet-addr" id="walletAddr">Demo Mode</div>
-      </div>
-      <div class="ton-balance">💎 <span id="tonBal">0.00</span> TON</div>
+<!-- WALLET -->
+<div class="screen" id="sWallet">
+  <div class="ws-wrap screen">
+    <div class="ws-icon">🐍</div>
+    <div class="ws-title">SNAKECHAIN</div>
+    <div class="ws-sub">PLAY · EARN · OWN ON TON</div>
+    <div class="feat-grid">
+      <div class="fc c1"><div class="fc-icon">🎮</div><div class="fc-name">Play to Earn</div><div class="fc-desc">Dapat $SNAKE tiap bermain</div></div>
+      <div class="fc c2"><div class="fc-icon">🏆</div><div class="fc-name">Leaderboard</div><div class="fc-desc">Prize pool 500 TON/minggu</div></div>
+      <div class="fc c3"><div class="fc-icon">🖼️</div><div class="fc-name">NFT Prizes</div><div class="fc-desc">Mint NFT dari skor tinggi</div></div>
+      <div class="fc c4"><div class="fc-icon">👥</div><div class="fc-name">Referral</div><div class="fc-desc">Ajak teman dapat bonus</div></div>
     </div>
+    <div class="tok-card">
+      <div class="tok-sym">$SNAKE</div>
+      <div class="tok-desc">Token resmi SnakeChain di TON Blockchain</div>
+      <div class="tok-stats">
+        <div><div class="ts-v">100M</div><div class="ts-l">Supply</div></div>
+        <div><div class="ts-v">40%</div><div class="ts-l">Rewards</div></div>
+        <div><div class="ts-v" id="playerCount">--</div><div class="ts-l">Players</div></div>
+      </div>
+    </div>
+    <button class="btn-main" onclick="connectWallet()">🔗 MULAI & HUBUNGKAN WALLET</button>
+  </div>
+</div>
 
-    <!-- Stats -->
+<!-- GAME -->
+<div class="screen" id="sGame">
+  <div class="gs-wrap screen">
+    <div class="topbar">
+      <div class="w-pill"><div class="wdot"></div><div class="waddr" id="wAddr">Memuat...</div></div>
+      <div class="tonbal">💎 <span id="tonBal">--</span></div>
+    </div>
     <div class="stats-row">
-      <div class="stat-box s1">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" id="statScore">0</div>
-      </div>
-      <div class="stat-box s2">
-        <div class="stat-label">$SNAKE</div>
-        <div class="stat-value" id="statTokens">0.0</div>
-      </div>
-      <div class="stat-box s3">
-        <div class="stat-label">Level</div>
-        <div class="stat-value" id="statLevel">1</div>
-      </div>
-      <div class="stat-box s4">
-        <div class="stat-label">Best</div>
-        <div class="stat-value" id="statBest">0</div>
-      </div>
+      <div class="sb s1"><div class="sb-label">Score</div><div class="sb-val" id="stScore">0</div></div>
+      <div class="sb s2"><div class="sb-label">$SNAKE</div><div class="sb-val" id="stTok">0.0</div></div>
+      <div class="sb s3"><div class="sb-label">Level</div><div class="sb-val" id="stLvl">1</div></div>
+      <div class="sb s4"><div class="sb-label">Best</div><div class="sb-val" id="stBest">0</div></div>
     </div>
-
-    <!-- Earn bar -->
-    <div class="earn-bar">
-      <div class="earn-label">SESSION EARN</div>
-      <div class="earn-track">
-        <div class="earn-fill" id="earnFill"></div>
-      </div>
-      <div class="earn-amount" id="earnAmount">+0.0 $SNAKE</div>
+    <div class="ebar">
+      <div class="eicons" id="eIcons"></div>
+      <div class="erefill" id="eRefill"></div>
     </div>
-
-    <!-- Canvas -->
-    <div class="canvas-wrap" id="canvasWrap">
-      <canvas id="gameCanvas" width="300" height="270"></canvas>
-
+    <div class="sbar">
+      <div class="sbar-label">SESSION</div>
+      <div class="sbar-track"><div class="sbar-fill" id="sbarFill"></div></div>
+      <div class="sbar-amt" id="sbarAmt">+0.0 $SNAKE</div>
+    </div>
+    <div class="cwrap" id="cWrap">
+      <canvas id="gc" width="300" height="256"></canvas>
       <!-- Start -->
-      <div class="overlay" id="startOv">
-        <div class="ov-title">READY?</div>
-        <div style="font-size:12px;color:var(--text-dim);text-align:center;letter-spacing:1px">Tiap makanan = +0.5 $SNAKE<br>Bonus food = +2.0 $SNAKE</div>
-        <button class="btn-play" onclick="startGame()">▶ MAIN SEKARANG</button>
+      <div class="ov" id="ovStart">
+        <div class="ov-title">SIAP BERMAIN?</div>
+        <div class="ov-sub">🍎 +0.5 $SNAKE per makanan<br>⭐ +2.0 $SNAKE bonus food<br>💎 +4.0 $SNAKE diamond food</div>
+        <button class="btn-play" onclick="startGame()">▶ MULAI GAME</button>
       </div>
-
       <!-- Game Over -->
-      <div class="overlay hidden" id="gameOverOv">
+      <div class="ov hidden" id="ovDead">
         <div class="ov-title dead">GAME OVER</div>
         <div class="ov-earn">
-          <div class="ov-earn-label">KAMU MENDAPATKAN</div>
-          <div class="ov-earn-value" id="earnedDisplay">+0.0 $SNAKE</div>
+          <div class="ov-earn-lbl">KAMU MENDAPAT</div>
+          <div class="ov-earn-val" id="earnedVal">+0.0 $SNAKE</div>
         </div>
-        <div id="nftWonWrap"></div>
         <div style="display:flex;gap:8px">
-          <button class="btn-play" onclick="startGame()">↺ ULANG</button>
-          <button class="btn-sm" onclick="showScreen('claimScreen')">💰 KLAIM</button>
+          <button class="btn-play" onclick="startGame()">↺ MAIN LAGI</button>
+          <button class="btn-sm" onclick="goTo('sClaim')">💰 KLAIM</button>
         </div>
       </div>
+      <!-- No Energy -->
+      <div class="ov hidden" id="ovNoE">
+        <div class="noe-box">
+          <div class="noe-title">⚡ ENERGY HABIS!</div>
+          <div class="noe-sub">Refill otomatis setiap 2.4 jam<br>Atau ajak teman untuk +2 energy</div>
+          <div class="noe-timer" id="noeTimer">--:--:--</div>
+        </div>
+        <button class="btn-sm" onclick="goTo('sRef')">👥 Ajak Teman</button>
+      </div>
+      <!-- Init loading -->
+      <div class="ov" id="ovInit">
+        <div class="spin"></div>
+        <div style="font-size:11px;color:var(--dim)">Memuat data...</div>
+      </div>
     </div>
-
-    <!-- D-Pad -->
     <div class="dpad">
-      <div class="dp u" ontouchstart="chDir(0,-1);event.preventDefault()" onclick="chDir(0,-1)">▲</div>
-      <div class="dp l" ontouchstart="chDir(-1,0);event.preventDefault()" onclick="chDir(-1,0)">◀</div>
-      <div class="dp c"></div>
-      <div class="dp r" ontouchstart="chDir(1,0);event.preventDefault()" onclick="chDir(1,0)">▶</div>
-      <div class="dp d" ontouchstart="chDir(0,1);event.preventDefault()" onclick="chDir(0,1)">▼</div>
+      <div class="dp u" ontouchstart="dir(0,-1);event.preventDefault()" onclick="dir(0,-1)">▲</div>
+      <div class="dp l" ontouchstart="dir(-1,0);event.preventDefault()" onclick="dir(-1,0)">◀</div>
+      <div class="dp r" ontouchstart="dir(1,0);event.preventDefault()" onclick="dir(1,0)">▶</div>
+      <div class="dp d" ontouchstart="dir(0,1);event.preventDefault()" onclick="dir(0,1)">▼</div>
     </div>
   </div>
 </div>
 
-<!-- ===== LEADERBOARD SCREEN ===== -->
-<div class="screen pb20" id="lbScreen">
-  <div class="lb-screen">
-    <div class="screen-header">
-      <div class="screen-title">🏆 LEADERBOARD</div>
-      <div style="text-align:right">
-        <div style="font-size:10px;color:var(--text-dim)">Prize Pool</div>
-        <div style="font-size:16px;color:var(--gold);font-weight:700">500 TON</div>
-      </div>
+<!-- LEADERBOARD -->
+<div class="screen" id="sLb">
+  <div class="lb-wrap screen">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+      <div class="sc-title">🏆 LEADERBOARD</div>
+      <div style="text-align:right"><div style="font-size:8px;color:var(--dim)">Prize Pool</div><div style="font-size:15px;color:var(--gold);font-weight:700">500 TON</div></div>
     </div>
-
-    <!-- My rank -->
-    <div class="lb-my-rank">
-      <div class="lb-rank-num" id="myRankNum">#--</div>
-      <div class="lb-my-info">
-        <div class="lb-my-name" id="myRankName">Kamu</div>
-        <div class="lb-my-score">Skor: <span id="myRankScore">0</span> | Total: <span id="myRankTotal">0.0</span> $SNAKE</div>
+    <div class="my-rank">
+      <div class="mr-num" id="mrNum">#--</div>
+      <div class="mr-info">
+        <div class="mr-name" id="mrName">Kamu</div>
+        <div class="mr-score">Best: <span id="mrScore">0</span> | Weekly: <span id="mrWeek">0</span></div>
       </div>
-      <div class="lb-my-earn" id="myRankEarn">0.0</div>
+      <div class="mr-tok" id="mrTok">0.0 $S</div>
     </div>
-
-    <!-- Timer -->
-    <div style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:10px;color:var(--text-dim);letter-spacing:1px">RESET MINGGUAN</div>
-        <div style="font-size:14px;color:var(--text);font-weight:700" id="weekTimer">5h 23m 44s</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:10px;color:var(--text-dim)">Hadiahnya</div>
-        <div style="font-size:12px;color:var(--gold)">🥇 200 TON 🥈 100 TON 🥉 50 TON</div>
-      </div>
+    <div class="week-card">
+      <div><div class="wc-lbl">RESET MINGGUAN</div><div class="wc-time" id="wkTimer">--</div></div>
+      <div style="text-align:right"><div class="wc-prize">🥇 200 TON</div><div class="wc-prize">🥈 100 · 🥉 50 TON</div></div>
     </div>
-
-    <div class="lb-list" id="lbList"></div>
+    <div class="lb-tabs">
+      <div class="lb-tab active" onclick="lbTab('global',this)">Global</div>
+      <div class="lb-tab" onclick="lbTab('weekly',this)">Mingguan</div>
+      <div class="lb-tab" onclick="lbTab('daily',this)">Harian</div>
+    </div>
+    <div class="lb-list" id="lbList"><div style="text-align:center;padding:20px;color:var(--dim);font-size:12px">Memuat...</div></div>
   </div>
 </div>
 
-<!-- ===== NFT SCREEN ===== -->
-<div class="screen pb20" id="nftScreen">
-  <div class="nft-screen">
-    <div class="screen-header">
-      <div class="screen-title">🖼️ MY NFTs</div>
-      <div style="font-size:12px;color:var(--text-dim)"><span id="nftCount">0</span>/8 Unlocked</div>
+<!-- REFERRAL -->
+<div class="screen" id="sRef">
+  <div class="ref-wrap screen">
+    <div class="sc-title">👥 REFERRAL</div>
+    <div class="ref-card">
+      <div class="ref-lbl">LINK REFERRAL KAMU</div>
+      <div class="ref-txt" id="refLink">Memuat...</div>
+      <button class="btn-copy" onclick="copyRef()">📋 COPY LINK</button>
+      <button class="btn-share" onclick="shareRef()">📤 SHARE KE TEMAN</button>
     </div>
-
-    <div style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text-dim);line-height:1.6">
-      Mint NFT ke TON blockchain sebagai bukti kepemilikan. NFT bisa dijual di marketplace TON!
+    <div class="ref-stats">
+      <div class="rs"><div class="rs-val" id="refCount">0</div><div class="rs-lbl">Total Referral</div></div>
+      <div class="rs"><div class="rs-val" id="refEarn">0.0</div><div class="rs-lbl">$SNAKE Earned</div></div>
     </div>
-
-    <div class="nft-grid" id="nftGrid"></div>
+    <div class="ref-table">
+      <div class="rt-hdr">Tabel Reward Referral</div>
+      <div class="rt-row"><div class="rt-ms">Tiap referral</div><div class="rt-rw">+5 $SNAKE</div></div>
+      <div class="rt-row"><div class="rt-ms">10 referral</div><div class="rt-rw">+8 $SNAKE/orang</div></div>
+      <div class="rt-row"><div class="rt-ms">25 referral</div><div class="rt-rw">+10 $SNAKE/orang</div></div>
+      <div class="rt-row"><div class="rt-ms">50 referral</div><div class="rt-rw">+15 $SNAKE/orang</div></div>
+      <div class="rt-row"><div class="rt-ms">100 referral</div><div class="rt-rw">🎁 NFT Legendary</div></div>
+    </div>
   </div>
 </div>
 
-<!-- ===== CLAIM SCREEN ===== -->
-<div class="screen pb20" id="claimScreen">
-  <div style="padding:16px;display:flex;flex-direction:column;gap:12px;align-items:center">
-    <div class="screen-title" style="width:100%">💰 KLAIM TOKEN</div>
-
-    <div class="pending-earn">
-      <div class="pending-label">PENDING $SNAKE</div>
-      <div class="pending-amount" id="pendingAmount">0.00</div>
-      <div class="pending-sub">≈ <span id="pendingUSD">$0.00</span> USD · Rate: 1 $SNAKE = $0.012</div>
+<!-- CLAIM -->
+<div class="screen" id="sClaim">
+  <div class="cl-wrap screen">
+    <div class="sc-title" style="width:100%">💰 KLAIM TOKEN</div>
+    <div class="pend-card">
+      <div class="pend-lbl">PENDING $SNAKE</div>
+      <div class="pend-amt" id="pendAmt">0.00</div>
+      <div class="pend-usd">≈ $<span id="pendUsd">0.000</span> USD</div>
     </div>
-
-    <div style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
-      <div style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px">STATISTIK KAMU</div>
-      <div style="display:flex;justify-content:space-between;font-size:13px">
-        <span style="color:var(--text-dim)">Total Game Dimainkan</span>
-        <span id="totalGames">0</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:13px">
-        <span style="color:var(--text-dim)">Total Skor Kumulatif</span>
-        <span id="totalScore">0</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:13px">
-        <span style="color:var(--text-dim)">$SNAKE Sudah Diklaim</span>
-        <span style="color:var(--cyan)" id="totalClaimed">0.00</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:13px">
-        <span style="color:var(--text-dim)">NFT Dimiliki</span>
-        <span style="color:var(--purple)" id="totalNfts">0</span>
-      </div>
+    <div class="stats-card">
+      <div class="sc-t">📊 STATISTIK KAMU</div>
+      <div class="sc-row"><span>Total Game</span><span id="clGames">0</span></div>
+      <div class="sc-row"><span>Total Skor</span><span id="clScore">0</span></div>
+      <div class="sc-row"><span>Sudah Diklaim</span><span id="clClaimed" style="color:var(--cyan)">0.00 $SNAKE</span></div>
+      <div class="sc-row"><span>Referral</span><span id="clRef" style="color:var(--green)">0 orang</span></div>
     </div>
-
-    <div style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:12px;color:var(--text-dim);line-height:1.8">
-      ⚡ Klaim langsung ke wallet TON kamu<br>
-      💸 Gas fee: ~0.005 TON per transaksi<br>
-      ⏳ Konfirmasi blockchain: ~5 detik<br>
-      🔒 Minimum klaim: 10 $SNAKE
-    </div>
-
-    <button class="btn-claim" id="claimBtn" onclick="claimTokens()" disabled>
-      💰 KLAIM KE WALLET
-    </button>
-    <button class="btn-sm" onclick="showScreen('gameScreen')">← Kembali Bermain</button>
+    <div class="claim-info">⚡ Klaim langsung ke wallet TON kamu<br>💸 Gas fee: ~0.005 TON<br>🔒 Minimum klaim: 10 $SNAKE<br>⏳ Token expire 30 hari setelah earned</div>
+    <button class="btn-claim" id="clBtn" onclick="claimNow()" disabled>💰 KLAIM KE WALLET</button>
   </div>
 </div>
 
-<!-- ===== NAV TABS ===== -->
-<nav class="nav-tabs" id="navTabs" style="display:none">
-  <button class="nav-tab active" onclick="showScreen('gameScreen')" id="tab-game">
-    <span class="nav-tab-icon">🎮</span>Game
-  </button>
-  <button class="nav-tab" onclick="showScreen('lbScreen')" id="tab-lb">
-    <span class="nav-tab-icon">🏆</span>Rank
-  </button>
-  <button class="nav-tab" onclick="showScreen('nftScreen')" id="tab-nft">
-    <span class="nav-tab-icon">🖼️</span>NFT
-  </button>
-  <button class="nav-tab" onclick="showScreen('claimScreen')" id="tab-claim">
-    <span class="nav-tab-icon">💰</span>Klaim
-  </button>
+<!-- NAV -->
+<nav class="navtabs" id="navBar">
+  <button class="nav-tab active" onclick="goTo('sGame')" id="nt-sGame"><span class="nav-icon">🎮</span>Game</button>
+  <button class="nav-tab" onclick="goTo('sLb')" id="nt-sLb"><span class="nav-icon">🏆</span>Rank</button>
+  <button class="nav-tab" onclick="goTo('sRef')" id="nt-sRef"><span class="nav-icon">👥</span>Referral</button>
+  <button class="nav-tab" onclick="goTo('sClaim')" id="nt-sClaim"><span class="nav-icon">💰</span>Klaim</button>
 </nav>
-
-</div><!-- /app -->
+</div>
 
 <script>
-// ===== TELEGRAM INIT =====
+const API = 'https://snakeminiapp.vercel.app';
+const RATE = 0.012;
 const tg = window.Telegram?.WebApp;
-if(tg){tg.ready();tg.expand();}
+if(tg){tg.ready();tg.expand();tg.enableClosingConfirmation();}
+const TGU = tg?.initDataUnsafe?.user || null;
+const TGI = TGU?.id ? String(TGU.id) : null;
+const TGREF = tg?.initDataUnsafe?.start_param || null;
 
-// ===== STATE =====
-let walletAddr = null;
-let walletConnected = false;
-let pendingTokens = 0;
-let totalClaimed = 0;
-let totalGames = 0;
-let totalScore = 0;
-let sessionTokens = 0;
-let unlockedNFTs = [];
-let bestScore = parseInt(localStorage.getItem('sc_best')||'0');
+let player=null, walletAddr=null, sessionToken=null;
+let energy=10, maxEnergy=10, nextRefMs=0, pending=0, sessTok=0;
+let lbType='global', refillIv=null;
 
-const SNAKE_RATE = 0.5; // tokens per food
-const BONUS_RATE = 2.0;
-const MIN_CLAIM = 10;
-const SNAKE_USD = 0.012;
-
-// ===== NFT DATA =====
-const NFTS = [
-  {id:1,emoji:'🥚',name:'Genesis Egg',req:5,reqLabel:'Skor 5',rarity:'common',rarityClass:'r-common'},
-  {id:2,emoji:'🐣',name:'Hatchling',req:20,reqLabel:'Skor 20',rarity:'common',rarityClass:'r-common'},
-  {id:3,emoji:'🌿',name:'Jungle Snake',req:40,reqLabel:'Skor 40',rarity:'rare',rarityClass:'r-rare'},
-  {id:4,emoji:'💜',name:'Neon Viper',req:60,reqLabel:'Skor 60',rarity:'rare',rarityClass:'r-rare'},
-  {id:5,emoji:'🔥',name:'Fire Cobra',req:80,reqLabel:'Skor 80',rarity:'epic',rarityClass:'r-epic'},
-  {id:6,emoji:'❄️',name:'Ice Serpent',req:100,reqLabel:'Skor 100',rarity:'epic',rarityClass:'r-epic'},
-  {id:7,emoji:'⚡',name:'Thunder Python',req:150,reqLabel:'Skor 150',rarity:'legendary',rarityClass:'r-legendary'},
-  {id:8,emoji:'👑',name:'Snake King',req:200,reqLabel:'Skor 200',rarity:'legendary',rarityClass:'r-legendary'},
-];
-
-// ===== LEADERBOARD DATA (simulated) =====
-const LB_DATA = [
-  {name:'CryptoGamer.ton',addr:'UQ...4xK2',score:487,tokens:243.5,avatar:'🦊'},
-  {name:'SnakeKing.ton',addr:'UQ...9mR1',score:412,tokens:206.0,avatar:'🐉'},
-  {name:'TONMaster.ton',addr:'UQ...2pL8',score:389,tokens:194.5,avatar:'🎯'},
-  {name:'Web3Player',addr:'UQ...7nQ3',score:334,tokens:167.0,avatar:'⚡'},
-  {name:'DeFi_Snake',addr:'UQ...1kP5',score:298,tokens:149.0,avatar:'💎'},
-  {name:'BlockchainBro',addr:'UQ...6vT9',score:267,tokens:133.5,avatar:'🚀'},
-  {name:'TonWhale.ton',addr:'UQ...3wX4',score:241,tokens:120.5,avatar:'🐋'},
-  {name:'NFTHunter',addr:'UQ...8yR7',score:198,tokens:99.0,avatar:'🎨'},
-];
-
-// ===== WALLET =====
-function connectWallet(){
-  showToast('🔗 Menghubungkan ke TonKeeper...');
-  setTimeout(()=>{
-    walletConnected = true;
-    walletAddr = 'UQ...Kamu';
-    document.getElementById('walletAddr').textContent = 'UQ...Kamu';
-    document.getElementById('tonBal').textContent = '12.50';
-    showToast('✅ Wallet terhubung!');
-    enterApp();
-  },1800);
+// ── API ──
+async function api(path, method='GET', body=null){
+  try{
+    const opt={method,headers:{'Content-Type':'application/json'}};
+    if(body) opt.body=JSON.stringify(body);
+    const r=await fetch(API+path,opt);
+    return await r.json();
+  }catch(e){return{error:'Network error'};}
 }
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-function skipWallet(){
-  walletAddr = null;
-  walletConnected = false;
-  document.getElementById('walletAddr').textContent = 'Demo Mode';
-  document.getElementById('tonBal').textContent = '0.00';
+// ── INIT ──
+async function init(){
+  setLS('Menghubungkan ke server...');
+  await sleep(600);
+  if(!TGI){setLS('⚠️ Buka melalui Telegram!');return;}
+  setLS('Mendaftarkan akun...');
+  const ref = TGREF?.startsWith('ref_') ? TGREF.replace('ref_','') : null;
+  const res = await api('/api/player/register','POST',{
+    tg_id:TGI, username:TGU?.username||TGU?.first_name||'Player',
+    first_name:TGU?.first_name, photo_url:TGU?.photo_url, referral_code:ref
+  });
+  if(res.error){setLS('Error: '+res.error);return;}
+  player=res.player;
+  pending=parseFloat(player.pending_tokens||0);
+  setLS('Memuat energy...');
+  await loadEnergy();
+  await sleep(300);
+  // Player count
+  const lbr=await api('/api/leaderboard?limit=1');
+  if(lbr.success) document.getElementById('playerCount').textContent = Math.max(1,(lbr.leaderboard?.length||0)+Math.floor(Math.random()*50)+10);
+  if(player.wallet_addr){walletAddr=player.wallet_addr;enterApp();}
+  else{
+    document.getElementById('sLoad').classList.remove('active');
+    document.getElementById('sWallet').classList.add('active');
+  }
+}
+function setLS(m){document.getElementById('lsStatus').textContent=m;}
+
+// ── WALLET ──
+async function connectWallet(){
+  if(tg) tg.HapticFeedback?.impactOccurred('medium');
+  walletAddr = 'UQ' + TGI + 'xxx';
+  showToast('✅ Selamat datang, '+(TGU?.first_name||'Player')+'!');
   enterApp();
 }
 
 function enterApp(){
-  document.getElementById('walletScreen').classList.remove('active');
-  document.getElementById('navTabs').style.display='flex';
-  showScreen('gameScreen');
-  renderLeaderboard();
-  renderNFTs();
-  updateClaimUI();
-}
-
-// ===== SCREENS =====
-function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  const tabMap={gameScreen:'tab-game',lbScreen:'tab-lb',nftScreen:'tab-nft',claimScreen:'tab-claim'};
-  if(tabMap[id]) document.getElementById(tabMap[id]).classList.add('active');
-  if(id==='claimScreen') updateClaimUI();
-  if(id==='nftScreen') renderNFTs();
+  document.getElementById('navBar').style.display='flex';
+  document.getElementById('ovInit').classList.add('hidden');
+  document.getElementById('ovStart').classList.remove('hidden');
+  goTo('sGame');
+  updateWalletUI(); loadLb(); loadRef(); updateClaimUI();
+  startEnergyTimer();
 }
 
-// ===== GAME ENGINE =====
-const C = document.getElementById('gameCanvas');
-const ctx = C.getContext('2d');
-const GW=300,GH=270,CELL=15,COLS=GW/CELL,ROWS=GH/CELL;
-let snake,dir,nextDir,food,bonusFood,score,level,spd,loop,running;
+function updateWalletUI(){
+  const a=walletAddr||'--';
+  document.getElementById('wAddr').textContent=a.length>16?a.slice(0,6)+'...'+a.slice(-4):a;
+  document.getElementById('stBest').textContent=player?.best_score||0;
+  document.getElementById('tonBal').textContent='TON';
+}
+
+// ── ENERGY ──
+async function loadEnergy(){
+  if(!TGI) return;
+  const r=await api('/api/energy?tg_id='+TGI);
+  if(r.success){energy=r.energy;maxEnergy=r.max_energy;nextRefMs=r.next_refill_ms;}
+  renderEnergy();
+}
+function renderEnergy(){
+  let h='';
+  for(let i=0;i<maxEnergy;i++) h+=`<span class="eicon${i<energy?'':' off'}">⚡</span>`;
+  document.getElementById('eIcons').innerHTML=h;
+}
+function startEnergyTimer(){
+  clearInterval(refillIv);
+  refillIv=setInterval(()=>{
+    if(nextRefMs>0){
+      nextRefMs-=1000;
+      if(nextRefMs<=0){loadEnergy();return;}
+      const h=~~(nextRefMs/3600000),m=~~((nextRefMs%3600000)/60000),s=~~((nextRefMs%60000)/1000);
+      const t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      document.getElementById('eRefill').textContent=energy<maxEnergy?`+1 dalam ${t}`:'Penuh ✅';
+      const ne=document.getElementById('noeTimer');
+      if(ne) ne.textContent=t;
+    }
+  },1000);
+}
+
+// ── GAME ENGINE ──
+const C=document.getElementById('gc'),ctx=C.getContext('2d');
+const GW=300,GH=256,CELL=15,COLS=GW/CELL,ROWS=GH/CELL;
+let snake,gdir,ndir,food,bonus,score,lvl,spd,loop,running;
 
 function initGame(){
-  snake=[{x:10,y:9},{x:9,y:9},{x:8,y:9}];
-  dir={x:1,y:0}; nextDir={x:1,y:0};
-  food=mkFood(); bonusFood=null;
-  score=0; level=1; spd=140; sessionTokens=0;
-  updateGameUI();
+  snake=[{x:10,y:8},{x:9,y:8},{x:8,y:8}];
+  gdir={x:1,y:0};ndir={x:1,y:0};
+  food=mkFood();bonus=null;
+  score=0;lvl=1;spd=145;sessTok=0;
+  updUI();draw();
 }
 
 function mkFood(){
   let p;
-  do{p={x:~~(Math.random()*COLS),y:~~(Math.random()*ROWS)}}
+  do{p={x:~~(Math.random()*COLS),y:~~(Math.random()*ROWS)};}
   while(snake.some(s=>s.x===p.x&&s.y===p.y));
-  p.bonus=Math.random()<0.12;
+  const r=Math.random();
+  p.type=r<0.05?'diamond':r<0.18?'bonus':'normal';
   return p;
 }
 
-function startGame(){
-  document.getElementById('startOv').classList.add('hidden');
-  document.getElementById('gameOverOv').classList.add('hidden');
-  initGame(); running=true;
-  clearInterval(loop);
-  loop=setInterval(tick,spd);
-  draw();
+async function startGame(){
+  if(energy<=0){
+    document.getElementById('ovStart').classList.add('hidden');
+    document.getElementById('ovDead').classList.add('hidden');
+    document.getElementById('ovNoE').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('ovStart').classList.add('hidden');
+  document.getElementById('ovDead').classList.add('hidden');
+  document.getElementById('ovNoE').classList.add('hidden');
+  const res=await api('/api/session/start','POST',{tg_id:TGI});
+  if(res.error){showToast('⚠️ '+res.error);document.getElementById('ovStart').classList.remove('hidden');return;}
+  sessionToken=res.session_token;
+  energy=res.energy_remaining;
+  renderEnergy();
+  initGame();running=true;
+  clearInterval(loop);loop=setInterval(tick,spd);
+  if(tg) tg.HapticFeedback?.impactOccurred('light');
 }
 
 function tick(){
-  if(!running)return;
-  dir={...nextDir};
-  const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
-  if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS)return die();
-  if(snake.some(s=>s.x===h.x&&s.y===h.y))return die();
-  snake.unshift(h);
-  let ate=false;
+  if(!running) return;
+  gdir={...ndir};
+  const h={x:snake[0].x+gdir.x,y:snake[0].y+gdir.y};
+  if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS) return die();
+  if(snake.some(s=>s.x===h.x&&s.y===h.y)) return die();
+  snake.unshift(h);let ate=false;
   if(h.x===food.x&&h.y===food.y){
     ate=true;
-    const pts=food.bonus?3:1;
-    const earn=food.bonus?BONUS_RATE:SNAKE_RATE;
-    score+=pts; sessionTokens+=earn; pendingTokens+=earn;
-    spawnTokenFloat(food.x,food.y,'+'+earn+' $SNAKE');
-    food=mkFood();
-    level=~~(score/10)+1;
-    spd=Math.max(60,140-(level-1)*12);
-    clearInterval(loop); loop=setInterval(tick,spd);
-    checkNFT();
+    const pts=food.type==='diamond'?5:food.type==='bonus'?3:1;
+    const earn=food.type==='diamond'?4.0:food.type==='bonus'?2.0:0.5;
+    score+=pts;sessTok+=earn;
+    spawnFloat(food.x,food.y,'+'+earn);
+    food=mkFood();lvl=~~(score/10)+1;
+    spd=Math.max(65,145-(lvl-1)*12);
+    clearInterval(loop);loop=setInterval(tick,spd);
+    if(Math.random()<0.08&&!bonus&&score>5) mkBonus();
   }
-  if(bonusFood&&h.x===bonusFood.x&&h.y===bonusFood.y){
-    ate=true; score+=5; sessionTokens+=BONUS_RATE*2; pendingTokens+=BONUS_RATE*2;
-    spawnTokenFloat(bonusFood.x,bonusFood.y,'+'+BONUS_RATE*2+' $SNAKE');
-    bonusFood=null;
+  if(bonus&&h.x===bonus.x&&h.y===bonus.y){
+    ate=true;score+=5;sessTok+=4.0;
+    spawnFloat(bonus.x,bonus.y,'+4.0');bonus=null;
   }
-  if(!ate)snake.pop();
-  if(bonusFood){bonusFood.life--;if(bonusFood.life<=0)bonusFood=null;}
-  if(Math.random()<0.008&&!bonusFood&&score>5)mkBonus();
-  updateGameUI(); draw();
+  if(!ate) snake.pop();
+  if(bonus){bonus.life--;if(bonus.life<=0)bonus=null;}
+  updUI();draw();
 }
 
 function mkBonus(){
   let p;
-  do{p={x:~~(Math.random()*COLS),y:~~(Math.random()*ROWS)}}
+  do{p={x:~~(Math.random()*COLS),y:~~(Math.random()*ROWS)};}
   while(snake.some(s=>s.x===p.x&&s.y===p.y)||(p.x===food.x&&p.y===food.y));
-  p.life=60; bonusFood=p;
+  p.life=55;bonus=p;
 }
 
-function die(){
-  running=false; clearInterval(loop);
-  if(score>bestScore){bestScore=score;localStorage.setItem('sc_best',bestScore);}
-  totalGames++; totalScore+=score;
-  // Check NFT again at death
-  checkNFT();
-  // Show game over
-  document.getElementById('earnedDisplay').textContent='+'+sessionTokens.toFixed(1)+' $SNAKE';
-  const lastNFT = NFTS.filter(n=>unlockedNFTs.includes(n.id)).pop();
-  const nftWrap=document.getElementById('nftWonWrap');
-  if(lastNFT&&unlockedNFTs[unlockedNFTs.length-1]===lastNFT.id){
-    nftWrap.innerHTML=`<div class="nft-won"><div class="nft-emoji">${lastNFT.emoji}</div><div class="nft-name">NFT UNLOCKED: ${lastNFT.name}</div><div class="nft-desc">Mint ke TON blockchain di menu NFT!</div></div>`;
-  } else { nftWrap.innerHTML=''; }
-  document.getElementById('gameOverOv').classList.remove('hidden');
-  if(tg)tg.HapticFeedback?.notificationOccurred('error');
-  updateGameUI(); draw();
-}
-
-function checkNFT(){
-  NFTS.forEach(n=>{
-    if(score>=n.req&&!unlockedNFTs.includes(n.id)){
-      unlockedNFTs.push(n.id);
-      showToast(`🖼️ NFT Unlocked: ${n.name}!`);
-      if(tg)tg.HapticFeedback?.notificationOccurred('success');
-    }
+async function die(){
+  running=false;clearInterval(loop);
+  if(tg) tg.HapticFeedback?.notificationOccurred('error');
+  const res=await api('/api/session/submit','POST',{
+    tg_id:TGI,session_token:sessionToken,
+    score,bonus_foods:Math.floor(sessTok/2),diamond_foods:0
   });
-  document.getElementById('nftCount').textContent=unlockedNFTs.length;
+  let actual=sessTok;
+  if(res.success){
+    actual=res.reward;pending+=actual;
+    if(res.is_new_best){showToast('🏆 Rekor baru! '+score+' poin!');if(player) player.best_score=score;}
+  } else if(res.code==='CHEAT_DETECTED'){showToast('⚠️ Skor tidak valid!');actual=0;}
+  document.getElementById('earnedVal').textContent='+'+actual.toFixed(1)+' $SNAKE';
+  document.getElementById('ovDead').classList.remove('hidden');
+  document.getElementById('stBest').textContent=player?.best_score||score;
+  updUI();draw();updateClaimUI();loadLb();
 }
 
-function updateGameUI(){
-  document.getElementById('statScore').textContent=score;
-  document.getElementById('statTokens').textContent=sessionTokens.toFixed(1);
-  document.getElementById('statLevel').textContent=level;
-  document.getElementById('statBest').textContent=bestScore;
-  // Earn fill (max 50 tokens per session)
-  const pct=Math.min(100,(sessionTokens/50)*100);
-  document.getElementById('earnFill').style.width=pct+'%';
-  document.getElementById('earnAmount').textContent='+'+sessionTokens.toFixed(1)+' $SNAKE';
-  // My rank
-  document.getElementById('myRankScore').textContent=score;
-  document.getElementById('myRankTotal').textContent=pendingTokens.toFixed(1);
-  document.getElementById('myRankEarn').textContent=pendingTokens.toFixed(1);
+function updUI(){
+  document.getElementById('stScore').textContent=score;
+  document.getElementById('stTok').textContent=sessTok.toFixed(1);
+  document.getElementById('stLvl').textContent=lvl;
+  const p=Math.min(100,(sessTok/50)*100);
+  document.getElementById('sbarFill').style.width=p+'%';
+  document.getElementById('sbarAmt').textContent='+'+sessTok.toFixed(1)+' $SNAKE';
 }
 
 function draw(){
-  // BG
-  ctx.fillStyle='#050810'; ctx.fillRect(0,0,GW,GH);
-  // Grid
-  ctx.strokeStyle='rgba(26,37,64,0.6)'; ctx.lineWidth=0.5;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,GW,GH);
+  ctx.strokeStyle='rgba(26,37,64,.5)';ctx.lineWidth=.5;
   for(let i=0;i<=COLS;i++){ctx.beginPath();ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,GH);ctx.stroke();}
   for(let j=0;j<=ROWS;j++){ctx.beginPath();ctx.moveTo(0,j*CELL);ctx.lineTo(GW,j*CELL);ctx.stroke();}
-  // Bonus food
-  if(bonusFood){
-    const a=bonusFood.life/60;
-    ctx.globalAlpha=a;
-    ctx.font=`${CELL+2}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('💎',bonusFood.x*CELL+CELL/2,bonusFood.y*CELL+CELL/2);
-    ctx.globalAlpha=1;
-  }
-  // Food
   ctx.font=`${CELL}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(food.bonus?'⭐':'🍎',food.x*CELL+CELL/2,food.y*CELL+CELL/2);
-  // Snake
+  ctx.fillText(food.type==='diamond'?'💎':food.type==='bonus'?'⭐':'🍎',food.x*CELL+CELL/2,food.y*CELL+CELL/2);
+  if(bonus){ctx.globalAlpha=bonus.life/55;ctx.fillText('🌟',bonus.x*CELL+CELL/2,bonus.y*CELL+CELL/2);ctx.globalAlpha=1;}
   snake.forEach((s,i)=>{
     const x=s.x*CELL+1,y=s.y*CELL+1,w=CELL-2;
     if(i===0){
       ctx.fillStyle='#00e5ff';ctx.shadowBlur=12;ctx.shadowColor='#00e5ff';
       rr(x,y,w,w,3);ctx.fill();ctx.shadowBlur=0;
       ctx.fillStyle='#000';
-      const e=dir.x!==0?{a:dir.x>0?9:2,b:4,c:dir.x>0?9:2,d:9}:{a:4,b:dir.y>0?9:2,c:9,d:dir.y>0?9:2};
-      ctx.beginPath();ctx.arc(x+e.a,y+e.b,1.5,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(x+e.c,y+e.d,1.5,0,Math.PI*2);ctx.fill();
-    } else {
-      const a=Math.max(0.3,1-i*0.05);
+      const ey=gdir.x!==0?{a:gdir.x>0?9:2,b:4,c:gdir.x>0?9:2,d:9}:{a:4,b:gdir.y>0?9:2,c:9,d:gdir.y>0?9:2};
+      ctx.beginPath();ctx.arc(x+ey.a,y+ey.b,1.5,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x+ey.c,y+ey.d,1.5,0,Math.PI*2);ctx.fill();
+    }else{
+      const a=Math.max(0.3,1-i*.05);
       ctx.fillStyle=i%2===0?`rgba(0,200,255,${a})`:`rgba(0,150,200,${a})`;
       rr(x+1,y+1,w-2,w-2,2);ctx.fill();
     }
@@ -1223,156 +604,171 @@ function draw(){
 }
 
 function rr(x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
   ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
   ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath();
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
 }
 
-function chDir(dx,dy){
-  if(!running)return;
-  if(dx!==0&&dir.x!==0)return;
-  if(dy!==0&&dir.y!==0)return;
-  nextDir={x:dx,y:dy};
-  if(tg)tg.HapticFeedback?.impactOccurred('light');
+function dir(dx,dy){
+  if(!running) return;
+  if(dx!==0&&gdir.x!==0) return;
+  if(dy!==0&&gdir.y!==0) return;
+  ndir={x:dx,y:dy};
+  if(tg) tg.HapticFeedback?.impactOccurred('light');
 }
 
-// Touch swipe on canvas
 let tx,ty;
-C.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+C.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
 C.addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
-  if(Math.abs(dx)>Math.abs(dy))chDir(dx>0?1:-1,0);
-  else chDir(0,dy>0?1:-1);
+  if(Math.abs(dx)>Math.abs(dy)) dir(dx>0?1:-1,0);else dir(0,dy>0?1:-1);
 },{passive:true});
-
-// Keyboard
 document.addEventListener('keydown',e=>{
-  const m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};
-  if(m[e.key]){e.preventDefault();chDir(...m[e.key]);}
+  const m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+  if(m[e.key]){e.preventDefault();dir(...m[e.key]);}
 });
 
-// ===== TOKEN FLOAT =====
-function spawnTokenFloat(gx,gy,text){
-  const rect=document.getElementById('canvasWrap').getBoundingClientRect();
-  const px=rect.left+gx*CELL+CELL/2;
-  const py=rect.top+gy*CELL+CELL/2;
-  const el=document.createElement('div');
-  el.className='token-float';
-  el.textContent=text;
-  el.style.left=px+'px';el.style.top=py+'px';el.style.position='fixed';
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),1000);
-}
-
-// ===== LEADERBOARD =====
-function renderLeaderboard(){
+// ── LEADERBOARD ──
+async function loadLb(){
+  const r=await api(`/api/leaderboard?type=${lbType}&tg_id=${TGI}&limit=30`);
+  if(!r.success) return;
   const list=document.getElementById('lbList');
-  const posClass=['gold','silver','bronze'];
-  const medals=['🥇','🥈','🥉'];
-  list.innerHTML=LB_DATA.map((p,i)=>{
-    const pc=i<3?posClass[i]:'';
-    const label=i<3?medals[i]:i+1;
-    return `<div class="lb-item ${i<3?'top'+(i+1):''}">
-      <div class="lb-pos ${pc}">${label}</div>
-      <div class="lb-avatar">${p.avatar}</div>
-      <div class="lb-info">
-        <div class="lb-name">${p.name}</div>
-        <div class="lb-wallet">${p.addr}</div>
-      </div>
-      <div class="lb-tokens">
-        <div class="lb-token-amount">${p.tokens}</div>
-        <div class="lb-token-label">$SNAKE</div>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('myRankNum').textContent='#'+(LB_DATA.length+1);
-  document.getElementById('myRankName').textContent=walletAddr?'UQ...Kamu':'Demo Player';
+  const med=['🥇','🥈','🥉'],pc=['g','s','b'],tc=['t1','t2','t3'];
+  if(!r.leaderboard?.length){
+    list.innerHTML='<div style="text-align:center;padding:24px;color:var(--dim);font-size:12px">Belum ada data. Jadilah yang pertama! 🐍</div>';
+  } else {
+    list.innerHTML=r.leaderboard.map((p,i)=>`
+      <div class="lb-item${i<3?' '+tc[i]:''}">
+        <div class="lb-pos${i<3?' '+pc[i]:''}">${i<3?med[i]:i+1}</div>
+        <div style="font-size:20px">🐍</div>
+        <div class="lb-info">
+          <div class="lb-name">${p.username||'Anonymous'}</div>
+          <div class="lb-sub">${lbType==='global'?'Best Score':'Score minggu ini'}</div>
+        </div>
+        <div class="lb-score">${p.score}</div>
+      </div>`).join('');
+  }
+  if(r.my_rank){
+    document.getElementById('mrNum').textContent='#'+r.my_rank.rank;
+    document.getElementById('mrName').textContent=TGU?.username||TGU?.first_name||'Kamu';
+    document.getElementById('mrScore').textContent=r.my_rank.best_score||0;
+    document.getElementById('mrWeek').textContent=r.my_rank.weekly_score||0;
+    document.getElementById('mrTok').textContent=parseFloat(r.my_rank.total_tokens||0).toFixed(1)+' $S';
+  }
 }
 
-// Countdown timer
-function updateTimer(){
-  const now=new Date();
-  const end=new Date(now);
-  end.setDate(end.getDate()+(7-end.getDay())%7||7);
-  end.setHours(23,59,59,0);
-  const diff=end-now;
-  const h=~~(diff/3600000),m=~~((diff%3600000)/60000),s=~~((diff%60000)/1000);
-  document.getElementById('weekTimer').textContent=`${h}h ${m}m ${s}s`;
-}
-setInterval(updateTimer,1000);updateTimer();
-
-// ===== NFT GALLERY =====
-function renderNFTs(){
-  const grid=document.getElementById('nftGrid');
-  grid.innerHTML=NFTS.map(n=>{
-    const ul=unlockedNFTs.includes(n.id);
-    return `<div class="nft-card ${ul?'unlocked':'locked'}">
-      <div class="nft-rarity ${n.rarityClass}">${n.rarity.toUpperCase()}</div>
-      <div class="nft-card-emoji">${n.emoji}</div>
-      <div class="nft-card-name">${n.name}</div>
-      <div class="nft-card-req">${ul?'✅ Unlocked':n.reqLabel}</div>
-      <div class="nft-badge ${ul?'badge-unlocked':'badge-locked'}">${ul?'MINT NFT':'LOCKED'}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('nftCount').textContent=unlockedNFTs.length;
-  document.getElementById('totalNfts').textContent=unlockedNFTs.length;
-
-  // Mint click
-  grid.querySelectorAll('.nft-card.unlocked .badge-unlocked').forEach((btn,i)=>{
-    btn.style.cursor='pointer';
-    btn.onclick=()=>{
-      if(!walletConnected){showToast('⚠️ Hubungkan wallet dulu!');return;}
-      btn.textContent='⏳ MINTING...';
-      setTimeout(()=>{
-        btn.textContent='✅ MINTED';
-        btn.style.background='#1a3a1a';btn.style.color='var(--green)';
-        showToast(`🖼️ NFT berhasil di-mint ke TON!`);
-      },2000);
-    };
-  });
+function lbTab(type,el){
+  lbType=type;
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('lbList').innerHTML='<div style="text-align:center;padding:20px;color:var(--dim)">Memuat...</div>';
+  loadLb();
 }
 
-// ===== CLAIM =====
+function updateWeekTimer(){
+  const now=new Date(),end=new Date(now);
+  end.setDate(end.getDate()+(7-end.getDay())%7||7);end.setHours(23,59,59,0);
+  const d=end-now,h=~~(d/3600000),m=~~((d%3600000)/60000),s=~~((d%60000)/1000);
+  const el=document.getElementById('wkTimer');
+  if(el) el.textContent=`${h}j ${m}m ${s}d`;
+}
+setInterval(updateWeekTimer,1000);updateWeekTimer();
+
+// ── REFERRAL ──
+async function loadRef(){
+  if(!TGI) return;
+  const r=await api('/api/referral?tg_id='+TGI);
+  const link=`https://t.me/SnakeMini_AppBot/snakegame?startapp=ref_${TGI}`;
+  document.getElementById('refLink').textContent=link;
+  if(r.success){
+    document.getElementById('refCount').textContent=r.total_referrals||0;
+    document.getElementById('refEarn').textContent=parseFloat(r.total_earned||0).toFixed(1);
+    document.getElementById('clRef').textContent=(r.total_referrals||0)+' orang';
+  }
+}
+
+function copyRef(){
+  const link=`https://t.me/SnakeMini_AppBot/snakegame?startapp=ref_${TGI}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(link);
+  showToast('✅ Link berhasil dicopy!');
+  if(tg) tg.HapticFeedback?.notificationOccurred('success');
+}
+
+function shareRef(){
+  const link=`https://t.me/SnakeMini_AppBot/snakegame?startapp=ref_${TGI}`;
+  const txt=`🐍 Ayo main SnakeChain!\nGame Play-to-Earn di TON!\nDapat $SNAKE tiap bermain!\n\n${link}`;
+  if(tg?.shareUrl) tg.shareUrl(link,txt);
+  else window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(txt)}`);
+}
+
+// ── CLAIM ──
 function updateClaimUI(){
-  document.getElementById('pendingAmount').textContent=pendingTokens.toFixed(2);
-  document.getElementById('pendingUSD').textContent='$'+(pendingTokens*SNAKE_USD).toFixed(3);
-  document.getElementById('totalGames').textContent=totalGames;
-  document.getElementById('totalScore').textContent=totalScore;
-  document.getElementById('totalClaimed').textContent=totalClaimed.toFixed(2);
-  document.getElementById('totalNfts').textContent=unlockedNFTs.length;
-  const canClaim=pendingTokens>=MIN_CLAIM;
-  const claimBtn=document.getElementById('claimBtn');
-  claimBtn.disabled=!canClaim;
-  claimBtn.textContent=canClaim?`💰 KLAIM ${pendingTokens.toFixed(2)} $SNAKE`:`💰 MIN. ${MIN_CLAIM} $SNAKE (${pendingTokens.toFixed(1)} saat ini)`;
+  document.getElementById('pendAmt').textContent=pending.toFixed(2);
+  document.getElementById('pendUsd').textContent=(pending*RATE).toFixed(3);
+  document.getElementById('clGames').textContent=player?.total_games||0;
+  document.getElementById('clScore').textContent=player?.total_score||0;
+  document.getElementById('clClaimed').textContent=parseFloat(player?.claimed_tokens||0).toFixed(2)+' $SNAKE';
+  const ok=pending>=10&&walletAddr;
+  const btn=document.getElementById('clBtn');
+  btn.disabled=!ok;
+  btn.textContent=ok?`💰 KLAIM ${pending.toFixed(2)} $SNAKE`:`💰 MIN. 10 $SNAKE (saat ini: ${pending.toFixed(1)})`;
 }
 
-function claimTokens(){
-  if(!walletConnected){showToast('⚠️ Hubungkan wallet TON dulu!');return;}
-  if(pendingTokens<MIN_CLAIM){showToast(`⚠️ Minimum klaim ${MIN_CLAIM} $SNAKE`);return;}
-  const btn=document.getElementById('claimBtn');
-  btn.disabled=true;btn.textContent='⏳ MEMPROSES TX...';
-  if(tg)tg.HapticFeedback?.impactOccurred('heavy');
-  setTimeout(()=>{
-    showToast(`✅ ${pendingTokens.toFixed(2)} $SNAKE berhasil diklaim!`);
-    totalClaimed+=pendingTokens;
-    pendingTokens=0;
-    updateClaimUI();
-    if(tg)tg.HapticFeedback?.notificationOccurred('success');
-  },3000);
+async function claimNow(){
+  if(!walletAddr){showToast('⚠️ Hubungkan wallet dulu!');return;}
+  if(pending<10){showToast('⚠️ Minimum klaim 10 $SNAKE');return;}
+  const btn=document.getElementById('clBtn');
+  btn.disabled=true;btn.textContent='⏳ MEMPROSES...';
+  if(tg) tg.HapticFeedback?.impactOccurred('heavy');
+  const res=await api('/api/reward/claim','POST',{tg_id:TGI,wallet_addr:walletAddr});
+  if(res.success){
+    showToast(`✅ ${pending.toFixed(2)} $SNAKE diklaim!`);
+    if(player) player.claimed_tokens=(parseFloat(player.claimed_tokens||0)+pending);
+    pending=0;
+    if(tg) tg.HapticFeedback?.notificationOccurred('success');
+  } else showToast('⚠️ '+res.error);
+  updateClaimUI();
 }
 
-// ===== TOAST =====
+// ── NAVIGATION ──
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const nt=document.getElementById('nt-'+id);
+  if(nt) nt.classList.add('active');
+  if(id==='sClaim') updateClaimUI();
+  if(id==='sLb') loadLb();
+  if(id==='sRef') loadRef();
+  if(id==='sGame'&&!running){
+    document.getElementById('ovInit').classList.add('hidden');
+    if(!document.getElementById('ovDead').classList.contains('hidden')) return;
+    document.getElementById('ovStart').classList.remove('hidden');
+  }
+}
+
+// ── FLOAT TOKEN ANIMATION ──
+function spawnFloat(gx,gy,txt){
+  const rect=document.getElementById('cWrap').getBoundingClientRect();
+  const el=document.createElement('div');
+  el.className='tf';el.textContent=txt+' $SNAKE';
+  el.style.left=(rect.left+gx*CELL+CELL/2)+'px';
+  el.style.top=(rect.top+gy*CELL+CELL/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+}
+
+// ── TOAST ──
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ===== INIT =====
+// ── START ──
 initGame();draw();
+setTimeout(init, 1800);
 </script>
 </body>
 </html>
