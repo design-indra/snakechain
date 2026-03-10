@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/player/register", "destination": "/api/player/register.js" },
+    { "source": "/api/player/wallet", "destination": "/api/player/wallet.js" },
     { "source": "/api/session/start", "destination": "/api/session/start.js" },
     { "source": "/api/session/submit", "destination": "/api/session/submit.js" },
     { "source": "/api/leaderboard", "destination": "/api/leaderboard/index.js" },
