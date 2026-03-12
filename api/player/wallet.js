@@ -1,4 +1,5 @@
-const { supabase } = require('../../lib/supabase');
+// api/player/wallet.js
+const supabase = require('../../lib/supabase'); // ← fixed: no destructuring
 
 function isValidTonAddress(addr) {
   if (!addr) return false;
@@ -18,12 +19,12 @@ module.exports = async (req, res) => {
   if (!tg_id || !wallet_addr) return res.status(400).json({ error: 'Missing fields' });
 
   if (!isValidTonAddress(wallet_addr)) {
-    return res.status(400).json({ error: 'Format wallet address tidak valid' });
+    return res.status(400).json({ error: 'Invalid TON wallet address format' });
   }
 
   const { data, error } = await supabase
     .from('players')
-    .update({ wallet_addr })
+    .update({ wallet_addr, updated_at: new Date().toISOString() })
     .eq('tg_id', String(tg_id))
     .select()
     .single();
