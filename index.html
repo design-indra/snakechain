@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 <title>🐍 SnakeChain</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap');
 :root{
@@ -233,9 +232,23 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
         <div><div class="ts-v" id="playerCount">--</div><div class="ts-l">Players</div></div>
       </div>
     </div>
-    <button class="btn-main" id="btnConnect" onclick="connectWallet()">🔗 CONNECT TON WALLET</button>
-    <div id="tcStatus" style="font-size:10px;color:var(--dim);text-align:center;min-height:16px"></div>
-    <div class="ws-note">Connect once — your wallet is saved permanently.<br>You will not need to connect again.</div>
+
+    <div style="width:100%;background:var(--card);border:1px solid var(--cyan);border-radius:12px;padding:14px;box-shadow:var(--gc)">
+      <div style="font-size:9px;color:var(--dim);letter-spacing:2px;margin-bottom:8px">YOUR TON WALLET ADDRESS</div>
+      <input id="walletInput" type="text" placeholder="EQ... or UQ... or kQ..."
+        style="width:100%;background:#0a0d1a;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);outline:none;-webkit-appearance:none"
+        oninput="validateWalletInput(this.value)"
+      />
+      <div id="walletInputErr" style="font-size:9px;color:var(--red);margin-top:5px;min-height:14px"></div>
+      <div style="font-size:8px;color:var(--dim);margin-top:4px;line-height:1.6">
+        📋 Copy your address from <b style="color:var(--cyan)">Tonkeeper</b>, <b style="color:var(--cyan)">MyTonWallet</b>, or any TON wallet app
+      </div>
+    </div>
+
+    <button class="btn-main" id="btnConnect" onclick="submitWallet()" disabled style="opacity:0.4">
+      🔗 CONNECT WALLET
+    </button>
+    <div class="ws-note">Your address is saved permanently.<br>You will not need to enter it again.</div>
   </div>
 </div>
 
@@ -497,34 +510,50 @@ async function api(path, method='GET', body=null){
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-// ── TON CONNECT — initialized immediately when page loads ──
-let tonConnectUI = null;
-try {
-  tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: 'https://snakeminiapp.vercel.app/tonconnect-manifest.json',
-    buttonRootId: null,
-  });
-  tonConnectUI.onStatusChange(async wallet => {
-    if(wallet){
-      walletAddr = wallet.account.address;
-      if(TGI){
-        await api('/api/player/wallet','POST',{tg_id:TGI, wallet_addr:walletAddr});
-        if(player) player.wallet_addr = walletAddr;
-      }
-      showToast('✅ Wallet connected!');
-      if(document.getElementById('sWallet').classList.contains('active')) enterApp();
-      updateWalletUI();
-    }
-  });
-} catch(e){
-  console.log('TON Connect init error:', e);
+// ── WALLET INPUT ──
+function isValidTonAddr(addr){
+  if(!addr) return false;
+  if(/^(EQ|UQ|kQ|0Q)[A-Za-z0-9_-]{46}$/.test(addr)) return true;
+  if(/^0:[a-fA-F0-9]{64}$/.test(addr)) return true;
+  return false;
 }
 
-async function connectWallet(){
+function validateWalletInput(val){
+  const btn = document.getElementById('btnConnect');
+  const err = document.getElementById('walletInputErr');
+  val = val.trim();
+  if(!val){ err.textContent=''; btn.disabled=true; btn.style.opacity='0.4'; return; }
+  if(isValidTonAddr(val)){
+    err.textContent='✅ Valid TON address';
+    err.style.color='var(--green)';
+    btn.disabled=false;
+    btn.style.opacity='1';
+  } else {
+    err.textContent='⚠️ Invalid format. Must start with EQ, UQ, kQ or 0Q';
+    err.style.color='var(--red)';
+    btn.disabled=true;
+    btn.style.opacity='0.4';
+  }
+}
+
+async function submitWallet(){
+  const input = document.getElementById('walletInput');
+  const addr = input?.value?.trim();
+  if(!isValidTonAddr(addr)){ showToast('⚠️ Please enter a valid TON address'); return; }
   if(tg) tg.HapticFeedback?.impactOccurred('medium');
-  if(!tonConnectUI){showToast('⚠️ Wallet SDK not loaded. Please refresh.');return;}
-  try{ await tonConnectUI.openModal(); }
-  catch(e){ showToast('⚠️ Could not open wallet. Try again.'); }
+  const btn = document.getElementById('btnConnect');
+  btn.disabled=true; btn.textContent='⏳ Saving...';
+  const res = await api('/api/player/wallet','POST',{tg_id:TGI, wallet_addr:addr});
+  if(res.success || res.player){
+    walletAddr = addr;
+    if(player) player.wallet_addr = addr;
+    showToast('✅ Wallet connected!');
+    if(tg) tg.HapticFeedback?.notificationOccurred('success');
+    enterApp();
+  } else {
+    showToast('⚠️ '+(res.error||'Failed to save wallet'));
+    btn.disabled=false; btn.textContent='🔗 CONNECT WALLET';
+  }
 }
 
 // ── INIT ──
