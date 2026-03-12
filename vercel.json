@@ -17,6 +17,7 @@
     { "src": "/api/energy", "dest": "/api/energy/index.js" },
     { "src": "/api/reward/claim", "dest": "/api/reward/claim.js" },
     { "src": "/api/referral", "dest": "/api/referral/index.js" },
+    { "src": "/api/daily/checkin", "dest": "/api/daily/checkin.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
