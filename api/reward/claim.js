@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
 
     // Validate TON address format (support semua format)
     if (!isValidTonAddress(wallet_addr)) {
-      return res.status(400).json({ error: 'Format wallet TON tidak valid' });
+      return res.status(400).json({ error: 'Invalid TON wallet address format' });
     }
 
     const { data: player } = await supabase
@@ -65,8 +65,8 @@ module.exports = async (req, res) => {
       success: true,
       claimed_amount: pendingTokens,
       wallet_addr,
-      message: `${pendingTokens.toFixed(2)} $SNAKE sedang diproses ke wallet kamu!`,
-      note: 'Smart contract akan mentransfer token dalam beberapa menit'
+      message: `${pendingTokens.toFixed(2)} $SNAKE is being sent to your wallet!`,
+      note: 'Smart contract will transfer tokens within a few minutes'
     });
 
   } catch (err) {
