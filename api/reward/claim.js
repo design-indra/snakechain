@@ -1,6 +1,16 @@
 // api/reward/claim.js
 const supabase = require('../../lib/supabase');
 
+// Validasi semua format TON address: EQ, UQ, kQ, 0Q, dan raw 0:xxxx
+function isValidTonAddress(addr) {
+  if (!addr) return false;
+  // Format friendly: EQ..., UQ..., kQ..., 0Q...
+  if (/^(EQ|UQ|kQ|0Q)[A-Za-z0-9_-]{46}$/.test(addr)) return true;
+  // Format raw: 0:hexstring (64 hex chars)
+  if (/^0:[a-fA-F0-9]{64}$/.test(addr)) return true;
+  return false;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -12,8 +22,8 @@ module.exports = async (req, res) => {
     const { tg_id, wallet_addr } = req.body;
     if (!tg_id || !wallet_addr) return res.status(400).json({ error: 'tg_id and wallet_addr required' });
 
-    // Validate TON address format
-    if (!wallet_addr.match(/^(EQ|UQ)[A-Za-z0-9_-]{46}$/)) {
+    // Validate TON address format (support semua format)
+    if (!isValidTonAddress(wallet_addr)) {
       return res.status(400).json({ error: 'Format wallet TON tidak valid' });
     }
 
@@ -22,13 +32,13 @@ module.exports = async (req, res) => {
     if (!player) return res.status(404).json({ error: 'Player not found' });
 
     const pendingTokens = parseFloat(player.pending_tokens || 0);
-    if (pendingTokens < 10) {
+    if (pendingTokens < 5000) {
       return res.status(400).json({
-        error: `Minimum klaim 10 $SNAKE. Kamu punya ${pendingTokens.toFixed(2)} $SNAKE.`
+        error: `Minimum klaim 5000 $SNAKE. Kamu punya ${pendingTokens.toFixed(2)} $SNAKE.`
       });
     }
 
-    // Save wallet address
+    // Save wallet address & update tokens
     await supabase.from('players').update({
       wallet_addr,
       pending_tokens: 0,
@@ -50,11 +60,6 @@ module.exports = async (req, res) => {
       amount: pendingTokens,
       description: `Claim to wallet: ${wallet_addr.slice(0, 8)}...`
     });
-
-    // Update leaderboard total tokens
-    await supabase.from('leaderboard').update({
-      total_tokens: supabase.rpc('increment_tokens', { amount: pendingTokens })
-    }).eq('tg_id', String(tg_id));
 
     return res.status(200).json({
       success: true,
