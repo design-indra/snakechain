@@ -1,23 +1,21 @@
 {
   "version": 2,
   "builds": [
-    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "index.html",               "use": "@vercel/static" },
     { "src": "tonconnect-manifest.json", "use": "@vercel/static" },
-    { "src": "icon.png", "use": "@vercel/static" },
-    { "src": "api/**/*.js", "use": "@vercel/node" }
+    { "src": "icon.png",                 "use": "@vercel/static" },
+    { "src": "api/**/*.js",              "use": "@vercel/node" }
   ],
-  "routes": [
-    { "src": "/tonconnect-manifest.json", "dest": "/tonconnect-manifest.json" },
-    { "src": "/icon.png", "dest": "/icon.png" },
-    { "src": "/api/player/register", "dest": "/api/player/register.js" },
-    { "src": "/api/player/wallet", "dest": "/api/player/wallet.js" },
-    { "src": "/api/session/start", "dest": "/api/session/start.js" },
-    { "src": "/api/session/submit", "dest": "/api/session/submit.js" },
-    { "src": "/api/leaderboard", "dest": "/api/leaderboard/index.js" },
-    { "src": "/api/energy", "dest": "/api/energy/index.js" },
-    { "src": "/api/reward/claim", "dest": "/api/reward/claim.js" },
-    { "src": "/api/referral", "dest": "/api/referral/index.js" },
-    { "src": "/api/daily/checkin", "dest": "/api/daily/checkin.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/player/register",  "destination": "/api/player/register.js" },
+    { "source": "/api/player/wallet",    "destination": "/api/player/wallet.js" },
+    { "source": "/api/session/start",    "destination": "/api/session/start.js" },
+    { "source": "/api/session/submit",   "destination": "/api/session/submit.js" },
+    { "source": "/api/leaderboard",      "destination": "/api/leaderboard/index.js" },
+    { "source": "/api/energy",           "destination": "/api/energy/index.js" },
+    { "source": "/api/reward/claim",     "destination": "/api/reward/claim.js" },
+    { "source": "/api/referral",         "destination": "/api/referral/index.js" },
+    { "source": "/api/daily/checkin",    "destination": "/api/daily/checkin.js" },
+    { "source": "/(.*)",                 "destination": "/index.html" }
   ]
 }
