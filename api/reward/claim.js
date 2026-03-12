@@ -32,9 +32,9 @@ module.exports = async (req, res) => {
     if (!player) return res.status(404).json({ error: 'Player not found' });
 
     const pendingTokens = parseFloat(player.pending_tokens || 0);
-    if (pendingTokens < 5000) {
+    if (pendingTokens < 100) {
       return res.status(400).json({
-        error: `Minimum klaim 5000 $SNAKE. Kamu punya ${pendingTokens.toFixed(2)} $SNAKE.`
+        error: `Minimum claim 100 $SNAKE. You have ${pendingTokens.toFixed(2)} $SNAKE.`
       });
     }
 
