@@ -5,6 +5,13 @@ function generateReferralCode(tgId) {
   return 'SC' + tgId.toString().slice(-6) + Math.random().toString(36).slice(-3).toUpperCase();
 }
 
+function isValidTonAddress(addr) {
+  if (!addr) return false;
+  if (/^(EQ|UQ|kQ|0Q)[A-Za-z0-9_-]{46}$/.test(addr)) return true;
+  if (/^0:[a-fA-F0-9]{64}$/.test(addr)) return true;
+  return false;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -13,7 +20,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { tg_id, username, first_name, photo_url, referral_code } = req.body;
+    const { tg_id, username, first_name, photo_url, referral_code, wallet_addr } = req.body;
     if (!tg_id) return res.status(400).json({ error: 'tg_id required' });
 
     // Check existing player
@@ -37,21 +44,27 @@ module.exports = async (req, res) => {
         streak = 1;
       }
 
-      await supabase.from('players').update({
+      // Update data, termasuk wallet_addr jika dikirim dan valid
+      const updateData = {
         username, first_name, photo_url,
         last_login_date: today,
         streak_days: streak,
         updated_at: new Date().toISOString()
-      }).eq('tg_id', String(tg_id));
+      };
+      if (wallet_addr && isValidTonAddress(wallet_addr)) {
+        updateData.wallet_addr = wallet_addr;
+      }
 
-      return res.status(200).json({ success: true, player: { ...existing, streak_days: streak }, is_new: false });
+      await supabase.from('players').update(updateData).eq('tg_id', String(tg_id));
+
+      const updatedPlayer = { ...existing, ...updateData };
+      return res.status(200).json({ success: true, player: updatedPlayer, is_new: false });
     }
 
     // New player
     const newReferralCode = generateReferralCode(tg_id);
     let referred_by = null;
 
-    // Process referral
     if (referral_code) {
       const { data: referrer } = await supabase
         .from('players')
@@ -61,23 +74,17 @@ module.exports = async (req, res) => {
 
       if (referrer && referrer.tg_id !== String(tg_id)) {
         referred_by = referrer.tg_id;
-
-        // Save referral record
         await supabase.from('referrals').insert({
           referrer_tg_id: referrer.tg_id,
           referee_tg_id: String(tg_id),
           referrer_reward: 5,
           referee_reward: 2
         });
-
-        // Add reward to referrer
         await supabase.from('players').update({
           pending_tokens: supabase.rpc('increment', { x: 5 }),
           referral_count: (referrer.referral_count || 0) + 1,
           energy: supabase.rpc('increment', { x: 2 })
         }).eq('tg_id', referrer.tg_id);
-
-        // Log transaction for referrer
         await supabase.from('transactions').insert({
           tg_id: referrer.tg_id,
           type: 'referral',
@@ -88,7 +95,7 @@ module.exports = async (req, res) => {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const { data: newPlayer, error } = await supabase.from('players').insert({
+    const insertData = {
       tg_id: String(tg_id),
       username, first_name, photo_url,
       referral_code: newReferralCode,
@@ -97,11 +104,14 @@ module.exports = async (req, res) => {
       max_energy: 10,
       last_login_date: today,
       streak_days: 1
-    }).select().single();
+    };
+    if (wallet_addr && isValidTonAddress(wallet_addr)) {
+      insertData.wallet_addr = wallet_addr;
+    }
 
+    const { data: newPlayer, error } = await supabase.from('players').insert(insertData).select().single();
     if (error) throw error;
 
-    // Welcome reward for new player
     if (referred_by) {
       await supabase.from('rewards').insert({
         player_id: newPlayer.id,
@@ -110,16 +120,10 @@ module.exports = async (req, res) => {
         reward_type: 'referral',
         status: 'pending'
       });
-      await supabase.from('players').update({
-        pending_tokens: 2
-      }).eq('tg_id', String(tg_id));
+      await supabase.from('players').update({ pending_tokens: 2 }).eq('tg_id', String(tg_id));
     }
 
-    // Init leaderboard entry
-    await supabase.from('leaderboard').insert({
-      tg_id: String(tg_id),
-      username
-    }).onConflict('tg_id').ignore();
+    await supabase.from('leaderboard').insert({ tg_id: String(tg_id), username }).onConflict('tg_id').ignore();
 
     return res.status(201).json({ success: true, player: newPlayer, is_new: true });
 
