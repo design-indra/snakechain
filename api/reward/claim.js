@@ -1,13 +1,12 @@
 // api/reward/claim.js
 const supabase = require('../../lib/supabase');
 
-// Validasi semua format TON address: EQ, UQ, kQ, 0Q, dan raw 0:xxxx
+// Validasi semua format TON address termasuk raw format dari TON Connect
 function isValidTonAddress(addr) {
   if (!addr) return false;
-  // Format friendly: EQ..., UQ..., kQ..., 0Q...
   if (/^(EQ|UQ|kQ|0Q)[A-Za-z0-9_-]{46}$/.test(addr)) return true;
-  // Format raw: 0:hexstring (64 hex chars)
   if (/^0:[a-fA-F0-9]{64}$/.test(addr)) return true;
+  if (/^[a-fA-F0-9]{64}$/.test(addr)) return true;
   return false;
 }
 
@@ -20,9 +19,10 @@ module.exports = async (req, res) => {
 
   try {
     const { tg_id, wallet_addr } = req.body;
-    if (!tg_id || !wallet_addr) return res.status(400).json({ error: 'tg_id and wallet_addr required' });
+    if (!tg_id || !wallet_addr) {
+      return res.status(400).json({ error: 'tg_id and wallet_addr required' });
+    }
 
-    // Validate TON address format (support semua format)
     if (!isValidTonAddress(wallet_addr)) {
       return res.status(400).json({ error: 'Invalid TON wallet address format' });
     }
@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Save wallet address & update tokens
+    // Update wallet & reset pending tokens
     await supabase.from('players').update({
       wallet_addr,
       pending_tokens: 0,
@@ -46,7 +46,7 @@ module.exports = async (req, res) => {
       updated_at: new Date().toISOString()
     }).eq('tg_id', String(tg_id));
 
-    // Mark all pending rewards as claimed
+    // Mark rewards as claimed
     await supabase.from('rewards').update({
       status: 'claimed',
       claimed_at: new Date().toISOString(),
