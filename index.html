@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>🐍 SnakeChain</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/@tonconnect/ui@2.0.6/dist/tonconnect-ui.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap');
 :root{
@@ -82,26 +83,50 @@ html,body{
 .ts-v{font-size:14px;color:var(--cyan);font-weight:700;text-align:center}
 .ts-l{font-size:8px;color:var(--dim);text-align:center}
 
-/* Wallet input card */
-.wallet-input-card{
+/* TON Connect area */
+.tc-card{
   width:100%;background:var(--card);
-  border:1px solid var(--cyan);border-radius:12px;
-  padding:14px;box-shadow:var(--gc);
+  border:1px solid var(--cyan);border-radius:14px;
+  padding:16px;box-shadow:var(--gc);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
 }
-.wic-label{font-size:9px;color:var(--dim);letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.wic-label::after{content:'';flex:1;height:1px;background:var(--border)}
-.wallet-inp{
-  width:100%;background:#0a0d1a;
-  border:1px solid var(--border);border-radius:8px;
-  padding:10px 12px;
-  font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);
-  outline:none;-webkit-appearance:none;
-  transition:border-color .2s;
+.tc-title{font-size:9px;color:var(--dim);letter-spacing:2px;text-align:center}
+.tc-wallets{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:7px;width:100%;
 }
-.wallet-inp:focus{border-color:var(--cyan)}
-.wallet-inp::placeholder{color:var(--dim)}
-.wic-err{font-size:9px;min-height:14px;margin-top:5px;transition:color .2s}
-.wic-hint{font-size:8px;color:var(--dim);margin-top:5px;line-height:1.7}
+.tc-wallet-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:#0a0d1a;border:1px solid var(--border);border-radius:10px;
+  padding:8px 4px;cursor:pointer;transition:all .2s;
+  position:relative;
+}
+.tc-wallet-btn:active{border-color:var(--cyan);box-shadow:var(--gc);transform:scale(.95)}
+/* Telegram Wallet — featured */
+.tc-wallet-btn.featured{
+  border-color:var(--cyan);
+  background:linear-gradient(135deg,#0a1520,#0a0d1a);
+  box-shadow:var(--gc);
+}
+.tc-wallet-icon{font-size:22px}
+.tc-wallet-name{font-size:7px;color:var(--dim);letter-spacing:.5px;text-align:center}
+.tc-wallet-rec{
+  font-size:6px;color:var(--cyan);letter-spacing:.5px;
+  background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);
+  border-radius:3px;padding:1px 4px;margin-top:1px;
+}
+.tc-or{font-size:9px;color:var(--dim)}
+.tc-status{
+  width:100%;background:#0a0d1a;border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;
+  display:flex;align-items:center;gap:8px;
+}
+.tc-status-dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.tc-status-dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+.tc-status-text{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-disconnect{font-size:9px;color:var(--red);cursor:pointer;flex-shrink:0;padding:2px 6px;border:1px solid var(--red);border-radius:5px;background:transparent}
+.tc-hint{font-size:8px;color:var(--dim);text-align:center;line-height:1.7}
 .btn-connect{
   width:100%;padding:14px;
   background:linear-gradient(135deg,var(--cyan),#0077aa);
@@ -429,30 +454,49 @@ canvas{display:block;max-width:100%;max-height:100%}
       </div>
     </div>
 
-    <!-- TON Wallet Input -->
-    <div class="wallet-input-card">
-      <div class="wic-label">YOUR TON WALLET ADDRESS</div>
-      <input
-        class="wallet-inp"
-        id="walletInput"
-        type="text"
-        placeholder="EQ... or UQ... or kQ..."
-        oninput="onWalletInput(this.value)"
-        autocomplete="off"
-        autocorrect="off"
-        spellcheck="false"
-      />
-      <div class="wic-err" id="walletErr"></div>
-      <div class="wic-hint">
-        📋 Copy your address from <b style="color:var(--cyan)">Tonkeeper</b> or <b style="color:var(--cyan)">MyTonWallet</b><br>
-        🔒 Your address is saved permanently — you will not need to re-enter it
+    <!-- TON Connect -->
+    <div class="tc-card">
+      <div class="tc-title">HUBUNGKAN WALLET TON KAMU</div>
+
+      <!-- Wallet buttons -->
+      <div class="tc-wallets" id="tcWalletBtns">
+        <!-- Telegram Wallet — paling atas, paling direkomendasikan -->
+        <div class="tc-wallet-btn featured" onclick="connectWith('telegram-wallet')">
+          <div class="tc-wallet-icon">✈️</div>
+          <div class="tc-wallet-name">Telegram</div>
+          <div class="tc-wallet-rec">RECOMMENDED</div>
+        </div>
+        <div class="tc-wallet-btn" onclick="connectWith('tonkeeper')">
+          <div class="tc-wallet-icon">💎</div>
+          <div class="tc-wallet-name">Tonkeeper</div>
+        </div>
+        <div class="tc-wallet-btn" onclick="connectWith('mytonwallet')">
+          <div class="tc-wallet-icon">💼</div>
+          <div class="tc-wallet-name">MyTonWallet</div>
+        </div>
+        <div class="tc-wallet-btn" onclick="connectWith('tonhub')">
+          <div class="tc-wallet-icon">🔷</div>
+          <div class="tc-wallet-name">Tonhub</div>
+        </div>
+      </div>
+
+      <!-- Status setelah konek -->
+      <div class="tc-status" id="tcStatus" style="display:none">
+        <div class="tc-status-dot connected"></div>
+        <div class="tc-status-text" id="tcStatusText">Terhubung</div>
+        <div class="tc-disconnect" onclick="disconnectWallet()">Ganti</div>
+      </div>
+
+      <div class="tc-hint">
+        🔒 Hanya membaca alamat wallet · Tidak bisa akses dana kamu<br>
+        ✅ Disimpan permanen · Tidak perlu konek ulang
       </div>
     </div>
 
-    <button class="btn-connect" id="btnConnect" onclick="submitWallet()" disabled>
-      🔗 CONNECT WALLET & START
+    <button class="btn-connect" id="btnConnect" onclick="confirmWallet()" disabled>
+      🚀 MULAI BERMAIN
     </button>
-    <div class="ws-note">First time only · Stored securely · Cannot be changed</div>
+    <div class="ws-note">Pertama kali saja · Aman · Tidak bisa diubah</div>
   </div>
 </div>
 
@@ -741,60 +785,129 @@ async function api(path, method = 'GET', body = null) {
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ── WALLET VALIDATION ──
-function isValidTon(addr) {
-  if (!addr) return false;
-  if (/^(EQ|UQ|kQ|0Q)[A-Za-z0-9_-]{46}$/.test(addr)) return true;
-  if (/^0:[a-fA-F0-9]{64}$/.test(addr)) return true;
-  return false;
+// ── TON CONNECT ──
+let tonConnectUI = null;
+let pendingWalletAddr = null;
+
+function initTonConnect() {
+  try {
+    tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+      manifestUrl: 'https://snakeminiapp.vercel.app/tonconnect-manifest.json',
+      // Urutan wallet yang muncul di modal — Telegram Wallet paling atas
+      walletsListConfiguration: {
+        includeWallets: [
+          {
+            appName:   'telegram-wallet',
+            name:      'Wallet',
+            imageUrl:  'https://wallet.tg/images/logo-288.png',
+            aboutUrl:  'https://wallet.tg',
+            universalLink: 'https://t.me/wallet?attach=wallet',
+            bridgeUrl: 'https://bridge.tonapi.io/bridge',
+            platforms: ['ios','android','macos','windows','linux'],
+          }
+        ]
+      }
+    });
+
+    // Listen perubahan status wallet
+    tonConnectUI.onStatusChange(wallet => {
+      if (wallet) {
+        const addr = wallet.account.address;
+        pendingWalletAddr = addr;
+        showTcConnected(addr);
+      } else {
+        pendingWalletAddr = null;
+        showTcDisconnected();
+      }
+    });
+  } catch(e) {
+    console.error('TON Connect init error:', e);
+  }
 }
 
-function onWalletInput(val) {
-  val = val.trim();
-  const btn = document.getElementById('btnConnect');
-  const err = document.getElementById('walletErr');
-  if (!val) {
-    err.textContent = '';
-    btn.disabled = true;
-    return;
-  }
-  if (isValidTon(val)) {
-    err.textContent = '✅ Valid TON address';
-    err.style.color = 'var(--green)';
-    btn.disabled = false;
-  } else {
-    err.textContent = '⚠️ Must start with EQ, UQ, or kQ (48 chars)';
-    err.style.color = 'var(--red)';
-    btn.disabled = true;
-  }
+function showTcConnected(addr) {
+  const btns   = document.getElementById('tcWalletBtns');
+  const status = document.getElementById('tcStatus');
+  const text   = document.getElementById('tcStatusText');
+  const btn    = document.getElementById('btnConnect');
+  if (btns)   btns.style.display   = 'none';
+  if (status) status.style.display = 'flex';
+  if (text)   text.textContent     = addr.slice(0,8) + '...' + addr.slice(-6);
+  if (btn)    { btn.disabled = false; btn.textContent = '🚀 MULAI BERMAIN'; }
+  if (tg)     tg.HapticFeedback?.notificationOccurred('success');
+  showToast('✅ Wallet terhubung!');
 }
 
-async function submitWallet() {
-  const addr = document.getElementById('walletInput').value.trim();
-  if (!isValidTon(addr)) { showToast('⚠️ Invalid TON address'); return; }
+function showTcDisconnected() {
+  const btns   = document.getElementById('tcWalletBtns');
+  const status = document.getElementById('tcStatus');
+  const btn    = document.getElementById('btnConnect');
+  if (btns)   btns.style.display   = 'flex';
+  if (status) status.style.display = 'none';
+  if (btn)    { btn.disabled = true; btn.textContent = '🚀 MULAI BERMAIN'; }
+}
 
-  const btn = document.getElementById('btnConnect');
-  btn.disabled = true;
-  btn.textContent = '⏳ Saving...';
+async function connectWith(walletId) {
+  if (!tonConnectUI) { showToast('⚠️ TON Connect belum siap'); return; }
   if (tg) tg.HapticFeedback?.impactOccurred('medium');
 
-  const res = await api('/api/player/wallet', 'POST', { tg_id: TGI, wallet_addr: addr });
+  try {
+    if (walletId === 'telegram-wallet') {
+      // Telegram Wallet (@wallet) — connect langsung tanpa modal
+      // Ini akan buka @wallet bot di dalam Telegram
+      await tonConnectUI.openModal();
+      // Set preferred wallet ke telegram-wallet
+      tonConnectUI.setConnectRequestParameters({
+        state: 'ready',
+      });
+    } else {
+      // Wallet lain — buka modal pilihan
+      await tonConnectUI.openModal();
+    }
+  } catch(e) {
+    console.error('Connect error:', e);
+    showToast('⚠️ Gagal: ' + (e.message || 'Coba lagi'));
+  }
+}
+
+async function disconnectWallet() {
+  if (tonConnectUI) {
+    await tonConnectUI.disconnect();
+  }
+  pendingWalletAddr = null;
+  showTcDisconnected();
+}
+
+async function confirmWallet() {
+  if (!pendingWalletAddr) { showToast('⚠️ Hubungkan wallet dulu!'); return; }
+
+  const btn = document.getElementById('btnConnect');
+  btn.disabled  = true;
+  btn.textContent = '⏳ Menyimpan...';
+  if (tg) tg.HapticFeedback?.impactOccurred('medium');
+
+  const res = await api('/api/player/wallet', 'POST', {
+    tg_id: TGI,
+    wallet_addr: pendingWalletAddr
+  });
+
   if (res.success || res.player) {
-    walletAddr = addr;
-    if (player) player.wallet_addr = addr;
-    showToast('✅ Wallet connected!');
+    walletAddr = pendingWalletAddr;
+    if (player) player.wallet_addr = pendingWalletAddr;
+    showToast('✅ Wallet tersimpan!');
     if (tg) tg.HapticFeedback?.notificationOccurred('success');
     enterApp();
   } else {
-    showToast('⚠️ ' + (res.error || 'Failed'));
-    btn.disabled = false;
-    btn.textContent = '🔗 CONNECT WALLET & START';
+    showToast('⚠️ ' + (res.error || 'Gagal menyimpan'));
+    btn.disabled  = false;
+    btn.textContent = '🚀 MULAI BERMAIN';
   }
 }
 
 // ── INIT ──
 async function init() {
   setLS('Connecting to server...');
+  initTonConnect();
   await sleep(700);
 
   if (!TGI) { setLS('⚠️ Please open via Telegram!'); return; }
