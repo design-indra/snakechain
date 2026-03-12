@@ -3,26 +3,12 @@
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "tonconnect-manifest.json", "use": "@vercel/static" },
+    { "src": "icon.png", "use": "@vercel/static" },
     { "src": "api/**/*.js", "use": "@vercel/node" }
   ],
-  "headers": [
-    {
-      "source": "/tonconnect-manifest.json",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Content-Type", "value": "application/json" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
-      ]
-    }
-  ],
   "routes": [
+    { "src": "/tonconnect-manifest.json", "dest": "/tonconnect-manifest.json" },
+    { "src": "/icon.png", "dest": "/icon.png" },
     { "src": "/api/player/register", "dest": "/api/player/register.js" },
     { "src": "/api/player/wallet", "dest": "/api/player/wallet.js" },
     { "src": "/api/session/start", "dest": "/api/session/start.js" },
